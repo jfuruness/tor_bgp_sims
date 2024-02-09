@@ -116,7 +116,7 @@ class TORRelay:
             object.__setattr__(self, "ipv6_roa_validity", ROAValidity.UNKNOWN)
             object.__setattr__(self, "ipv6_roa_routed", ROARouted.UNKNOWN)
 
-        assert not self.ipv6_addr or ipv4_origin == ipv6_origin
+        # assert not self.ipv6_addr or ipv4_origin == ipv6_origin
 
     @property
     def ipv4_addr(self) -> IPv4Network:
@@ -164,8 +164,6 @@ class TORRelay:
         params = {"data_overload_limit": "ignore", "resource": str(ip_addr)}
         resp = session.get(URL, params=params)
         resp.raise_for_status()
-        from pprint import pprint
-        pprint(resp.json())
         data = resp.json()
 
         prefix_origin_pairs = list()

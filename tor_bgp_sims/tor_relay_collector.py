@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 import requests_cache
+from tqdm import tqdm
 
 from roa_collector import ROACollector
 from roa_checker import ROAChecker
@@ -15,12 +16,14 @@ class TORRelayCollector:
     def __init__(
         self,
         requests_cache_db_path: Optional[Path] = None,
+        dl_date: date = date(2024, 2, 9)
     ):
         # By default keep requests cached for a single day
         if requests_cache_db_path is None:
-            requests_cache_db_path = Path("/tmp/") / f"{date.today()}.db"
+            requests_cache_db_path = Path.home() / f"tor_bgp_sims_{dl_date}.db"
         self.requests_cache_db_path: Path = requests_cache_db_path
         self.session = requests_cache.CachedSession(str(self.requests_cache_db_path))
+        self.dl_date: date = dl_date
 
     def __del__(self):
         self.session.close()
@@ -40,9 +43,15 @@ class TORRelayCollector:
         """
 
         relevant_tor_lines: tuple[str, ...] = self._get_relevant_tor_lines()
-        raw_tor_data = self._get_raw_tor_data(relevant_tor_lines)
+        raw_tor_datas = self._get_raw_tor_data(relevant_tor_lines)
         init_vars = {"session": self.session, "roa_checker": ROAChecker()}
-        return tuple([TORRelay(**(x | init_vars)) for x in raw_tor_data])
+        tor_relays = list()
+        # NOTE: This takes about a half hour
+        # but not going to bother multiprocessing this
+        # due to rate limits and also caching - it only needs to run once
+        for x in tqdm(raw_tor_datas, total=len(raw_tor_datas), desc="Parsing TOR"):
+            tor_relays.append(TORRelay(**(x | init_vars)))
+        return tuple(tor_relays)
 
     def _get_relevant_tor_lines(self) -> tuple[str, ...]:
         """Returns the relevant lines from TOR consensus"""
@@ -68,7 +77,7 @@ class TORRelayCollector:
 
         return (
             "https://collector.torproject.org/recent/relay-descriptors/consensuses/"
-            f"{date.today().strftime('%Y-%m-%d-01-00-00')}-consensus"
+            f"{self.dl_date.strftime('%Y-%m-%d-01-00-00')}-consensus"
         )
 
     def _get_raw_tor_data(
