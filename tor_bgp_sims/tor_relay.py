@@ -1,5 +1,6 @@
 from dataclasses import dataclass, InitVar
 from ipaddress import ip_network, IPv4Network, IPv6Network
+from pprint import pprint, pformat
 from typing import Optional
 
 from requests_cache import CachedSession
@@ -132,7 +133,7 @@ class TORRelay:
         """Returns IPv6 prefix"""
 
         if self.a:
-            return self.a[0].split("]")[0][1:]
+            return ip_network(self.a[0].split("]")[0][1:])
 
     @property
     def gaurd_relay(self) -> bool:
@@ -155,7 +156,8 @@ class TORRelay:
     @staticmethod
     def get_prefix_origin_pair(
         session: CachedSession,
-        ip_addr: IPv4Network | IPv6Network
+        ip_addr: IPv4Network | IPv6Network,
+        debug: bool = False
     ) -> tuple[IPv4Network | IPv6Network, int]:
         """Returns ASNs and prefixesusing RIPE from a given IP addr"""
 
@@ -165,14 +167,26 @@ class TORRelay:
         resp = session.get(URL, params=params)
         resp.raise_for_status()
         data = resp.json()
+        if debug:
+            pprint(data)
+            input()
 
         prefix_origin_pairs = list()
         for inner in data["data"]["prefixes"]:
-            prefix_origin_pairs.append(
-                (ip_network(inner["prefix"]), int(inner["origin_asn"]))
-            )
+            # Sometimes API returns prefixes that don't overlap...
+            if ip_network(inner["prefix"]).overlaps(ip_addr):
+                prefix_origin_pairs.append(
+                    (ip_network(inner["prefix"]), int(inner["origin_asn"]))
+                )
         assert prefix_origin_pairs, f"No prefixes found for {ip_addr}"
-        resp.close()
 
+
+        # Ensure that the second most isn't the same length...
+        pairs = sorted(prefix_origin_pairs, key=lambda x: x[0].prefixlen)
+
+        msg = f"for {ip_addr}, need both: {pformat(resp.json(), indent=4)}"
+        assert len(pairs) == 1 or pairs[-1][0].prefixlen != pairs[-2][0].prefixlen, msg
+
+        resp.close()
         # Get most specific prefix origin paid
-        return sorted(prefix_origin_pairs, key=lambda x: x[0].prefixlen)[-1]
+        return pairs[-1]

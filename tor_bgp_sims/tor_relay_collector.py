@@ -32,9 +32,9 @@ class TORRelayCollector:
         """Download TOR Relay data w/cached requests"""
 
         relays = self._parse_tor_relays()
-        for relay in relays:
-            print(relay)
-            input()
+        # for relay in relays:
+        #     print(relay)
+        #     input()
 
     def _parse_tor_relays(self) -> tuple[TORRelay, ...]:
         """Parses TOR relays from the consensus URL
@@ -44,7 +44,7 @@ class TORRelayCollector:
 
         relevant_tor_lines: tuple[str, ...] = self._get_relevant_tor_lines()
         raw_tor_datas = self._get_raw_tor_data(relevant_tor_lines)
-        init_vars = {"session": self.session, "roa_checker": ROAChecker()}
+        init_vars = {"session": self.session, "roa_checker": self._init_roa_checker()}
         tor_relays = list()
         # NOTE: This takes about a half hour
         # but not going to bother multiprocessing this
@@ -103,6 +103,9 @@ class TORRelayCollector:
 
         roa_checker = ROAChecker()
         # TODO: Change this to historical roas
-        for roa in ROACollector(csv_path=None).run():
+        for roa in ROACollector(
+            csv_path=None,
+            requests_cache_db_path=self.requests_cache_db_path
+        ).run():
             roa_checker.insert(ip_network(roa.prefix), roa.origin, roa.max_length)
         return roa_checker
