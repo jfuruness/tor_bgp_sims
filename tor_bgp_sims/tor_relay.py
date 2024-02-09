@@ -1,6 +1,10 @@
 from dataclasses import dataclass, InitVar
+from ipaddress import ip_network, IPv4Network, IPv6Network
+from typing import Optional
 
 from requests_cache import CachedSession
+
+from roa_checker import ROAChecker, ROAValidity, ROARouted
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,16 +86,18 @@ class TORRelay:
     ) -> None:
         """Gets ASNs and ROAs for TOR relay"""
 
-        raise NotImplementedError
+        raise NotImplementedError("Store ASNs, assert only 1")
+        # Make sure ASNs are from both IPV4 and IPv6
+        raise NotImplementedError("Store ROA validities and routed")
 
     @property
-    def ipv4_addr(self) -> str:
+    def ipv4_addr(self) -> IPv4Network:
         """Returns IPv4 prefix"""
 
         raise NotImplementedError
 
     @property
-    def ipv6_addr(self) -> str:
+    def ipv6_addr(self) -> IPv6Network:
         """Returns IPv6 prefix"""
 
         raise NotImplementedError
@@ -115,7 +121,7 @@ class TORRelay:
         raise NotImplementedError
 
     @staticmethod
-    def get_asns(session: CachedSession, ip_addr: str) -> tuple[int, ...]:
+    def get_asns(session: CachedSession, ip_addr: IPv4Network | IPv6Network) -> tuple[int, ...]:
         """Returns ASNs using RIPE from a given IP addr"""
 
 
@@ -123,11 +129,3 @@ class TORRelay:
         raise NotImplementedError("Get ASNs")
         raise NotImplementedError("Assert ASNs exist")
         raise NotImplementedError("Return ASNs as tuple of ints")
-
-    @staticmethod
-    def get_roa_validity_and_routed(
-        roa_checker: ROAChecker,
-        ip_addr: str
-    ) -> tuple[ROAValidity, ROARouted]:
-        """Returns ROAValidity and ROARouted for a given prefix"""
-        raise NotImplementedError
