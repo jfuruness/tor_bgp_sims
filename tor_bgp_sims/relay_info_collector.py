@@ -34,7 +34,7 @@ def parse_consensus(consensus_data):
 
     for line in lines:
         parts = line.split()
-        if not parts: continue 
+        if not parts: continue
 
         prefix = parts[0]
 
@@ -46,7 +46,7 @@ def parse_consensus(consensus_data):
             nickname = parts[1]
             fingerprint = parts[2]
             ipv4_address = parts[6]
-            prefixes, asns = get_ripe_info(ipv4_address) 
+            prefixes, asns = get_ripe_info(ipv4_address)
             ipv6_address = None
             flags = None
             version = None
@@ -90,12 +90,12 @@ if __name__ == '__main__':
     response = requests.get(consensus_url)
     consensus_data = response.text
 
-    if response.status_code != 200: 
+    if response.status_code != 200:
         raise SystemExit(f"Failed to load consensus data. Status code: {response.status_code}")
 
     requests_cache.install_cache('ripe_stat_cache')
     relay_info_list = parse_consensus(consensus_data)
-    
+
     # for relay_info in relay_info_list:
     #     print(f"Nickname: {relay_info.nickname}")
     #     print(f"Fingerprint: {relay_info.fingerprint}")
