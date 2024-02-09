@@ -1,6 +1,7 @@
 from datetime import date
 from ipaddress import ip_network
 from pathlib import Path
+import pickle
 from typing import Optional
 
 import requests_cache
@@ -28,13 +29,16 @@ class TORRelayCollector:
     def __del__(self):
         self.session.close()
 
-    def run(self) -> None:
+    def run(self) -> tuple[TORRelay, ...]:
         """Download TOR Relay data w/cached requests"""
 
-        relays = self._parse_tor_relays()
-        # for relay in relays:
-        #     print(relay)
-        #     input()
+        pickle_path = Path(str(self.requests_cache_db_path).replace(".db", ".pickle"))
+        if not pickle_path.exists():
+            with pickle_path.open("wb") as f:
+                pickle.dump(self._parse_tor_relays(), f)
+
+        with pickle_path.open("rb") as f:
+            return pickle.load(f)
 
     def _parse_tor_relays(self) -> tuple[TORRelay, ...]:
         """Parses TOR relays from the consensus URL

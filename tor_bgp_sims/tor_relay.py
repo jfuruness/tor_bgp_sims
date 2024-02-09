@@ -136,10 +136,18 @@ class TORRelay:
             return ip_network(self.a[0].split("]")[0][1:])
 
     @property
-    def gaurd_relay(self) -> bool:
-        """Returns True if eligible to be a gaurd node"""
+    def guard(self) -> bool:
+        return self.guard_relay
 
-        return "Gaurd" in self.s
+    @property
+    def guard_relay(self) -> bool:
+        """Returns True if eligible to be a guard node"""
+
+        return "Guard" in self.s
+
+    @property
+    def exit(self) -> bool:
+        return self.exit_relay
 
     @property
     def exit_relay(self) -> bool:
@@ -151,7 +159,7 @@ class TORRelay:
     def version(self) -> str:
         """Returns the Relay version"""
 
-        return v[1]
+        return self.v[1]
 
     @staticmethod
     def get_prefix_origin_pair(
@@ -184,8 +192,10 @@ class TORRelay:
         # Ensure that the second most isn't the same length...
         pairs = sorted(prefix_origin_pairs, key=lambda x: x[0].prefixlen)
 
-        msg = f"for {ip_addr}, need both: {pformat(resp.json(), indent=4)}"
-        assert len(pairs) == 1 or pairs[-1][0].prefixlen != pairs[-2][0].prefixlen, msg
+
+        if len(pairs) > 1 and pairs[-1][0].prefixlen == pairs[-2][0].prefixlen:
+            msg = f"for {ip_addr}, need both: {pformat(resp.json(), indent=4)}"
+            print(msg)
 
         resp.close()
         # Get most specific prefix origin paid
