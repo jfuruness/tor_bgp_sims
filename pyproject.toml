@@ -44,7 +44,9 @@ classifiers = [
     "Intended Audience :: Developers"
 ]
 dependencies = [
-    "bgpy==5.0.0",
+    "bgpy_pkg==5.0.0",
+    "roa_collector==1.2.0",
+    "roa_checker==1.1.2",
 ]
 
 [project.urls]
@@ -53,10 +55,11 @@ Documentation = "https://github.com/jfuruness/tor_bgp_sims/wiki"
 
 [project.scripts]
 tor_bgp_sims = "tor_bgp_sims.__main__:main"
+tor = "tor_bgp_sims.__main__:main"
 
 [project.optional-dependencies]
 test = [
-    "bgpy[test]==5.0.0",
+    "bgpy_pkg[test]==5.0.0",
 ]
 
 [tool.setuptools]

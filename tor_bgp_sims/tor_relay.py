@@ -17,6 +17,8 @@ class TORRelay:
 
         r contains IP address:
             ex: r seele AtNw etVuH1 2024-02-07 07:01:56 104.53.221.159 9001 0
+        a contains IPv6 address
+            ex: a [2001:41d0:404:300::dd2]:9001
         s contains flags:
             ex: s Fast HSDir Running Stable V2Dir Valid
         v contains version:
@@ -71,61 +73,108 @@ class TORRelay:
     pr: tuple[str, ...]
     w: tuple[str, ...]
     p: tuple[str, ...]
-    asns: tuple[int, ...] = ()
-    ipv4_roa_validity: Optional[ROAValidity] = None
-    ipv4_roa_routed: Optional[ROARouted] = None
-    ipv6_roa_validity: Optional[ROAValidity] = None
-    ipv6_roa_routed: Optional[ROARouted] = None
     session: InitVar[CachedSession]
     roa_checker: InitVar[ROAChecker]
+    a: tuple[str, ...] = ()
+    ipv4_prefix: Optional[IPv4Network] = None
+    ipv4_origin: Optional[int] = None
+    ipv4_roa_validity: Optional[ROAValidity] = None
+    ipv4_roa_routed: Optional[ROARouted] = None
+    ipv6_prefix: Optional[IPv4Network] = None
+    ipv6_origin: Optional[int] = None
+    ipv6_roa_validity: Optional[ROAValidity] = None
+    ipv6_roa_routed: Optional[ROARouted] = None
 
     def __post_init__(
         self,
         session: CachedSession,
-        ROAChecker: ROAChecker,
+        roa_checker: ROAChecker,
     ) -> None:
         """Gets ASNs and ROAs for TOR relay"""
 
-        raise NotImplementedError("Store ASNs, assert only 1")
-        # Make sure ASNs are from both IPV4 and IPv6
-        raise NotImplementedError("Store ROA validities and routed")
+        # Get ipv4 prefix origin pair
+        ipv4_prefix, ipv4_origin = self.get_prefix_origin_pair(session, self.ipv4_addr)
+        object.__setattr__(self, "ipv4_prefix", ipv4_prefix)
+        object.__setattr__(self, "ipv4_origin", ipv4_origin)
+
+        # get ipv4 roa validity and routed
+        ipv4_validity, ipv4_routed = roa_checker.get_validity(ipv4_prefix, ipv4_origin)
+        object.__setattr__(self, "ipv4_roa_validity", ipv4_validity)
+        object.__setattr__(self, "ipv4_roa_routed", ipv4_routed)
+
+        # Get ipv6 prefix origin pair
+        if self.ipv6_addr:
+            ipv6_prefix, ipv6_origin = self.get_prefix_origin_pair(session, self.ipv6_addr)
+            object.__setattr__(self, "ipv6_prefix", ipv6_prefix)
+            object.__setattr__(self, "ipv6_origin", ipv6_origin)
+
+            # get ipv6 roa validity and routed
+            ipv6_validity, ipv6_routed = roa_checker.get_validity(ipv6_prefix, ipv6_origin)
+            object.__setattr__(self, "ipv6_roa_validity", ipv6_validity)
+            object.__setattr__(self, "ipv6_roa_routed", ipv6_routed)
+        else:
+            object.__setattr__(self, "ipv6_roa_validity", ROAValidity.UNKNOWN)
+            object.__setattr__(self, "ipv6_roa_routed", ROARouted.UNKNOWN)
+
+        assert not self.ipv6_addr or ipv4_origin == ipv6_origin
 
     @property
     def ipv4_addr(self) -> IPv4Network:
-        """Returns IPv4 prefix"""
+        """Returns IPv4 prefix
 
-        raise NotImplementedError
+        ex: r seele AtNw etVuH1 2024-02-07 07:01:56 104.53.221.159 9001 0
+        """
+
+        return ip_network(self.r[5])
 
     @property
-    def ipv6_addr(self) -> IPv6Network:
+    def ipv6_addr(self) -> Optional[IPv6Network]:
         """Returns IPv6 prefix"""
 
-        raise NotImplementedError
+        if self.a:
+            return self.a[0].split("]")[0][1:]
 
     @property
     def gaurd_relay(self) -> bool:
         """Returns True if eligible to be a gaurd node"""
 
-        raise NotImplementedError
+        return "Gaurd" in self.s
 
     @property
     def exit_relay(self) -> bool:
         """Returns True if eligible to be an exit node"""
 
-        raise NotImplementedError
+        return "Exit" in self.s and "BadExit" not in self.s
 
     @property
     def version(self) -> str:
         """Returns the Relay version"""
 
-        raise NotImplementedError
+        return v[1]
 
     @staticmethod
-    def get_asns(session: CachedSession, ip_addr: IPv4Network | IPv6Network) -> tuple[int, ...]:
-        """Returns ASNs using RIPE from a given IP addr"""
+    def get_prefix_origin_pair(
+        session: CachedSession,
+        ip_addr: IPv4Network | IPv6Network
+    ) -> tuple[IPv4Network | IPv6Network, int]:
+        """Returns ASNs and prefixesusing RIPE from a given IP addr"""
 
 
-        # api_endpoint = f"https://stat.ripe.net/data/related-prefixes/data.json?data_overload_limit=ignore&resource={ip_address}"
-        raise NotImplementedError("Get ASNs")
-        raise NotImplementedError("Assert ASNs exist")
-        raise NotImplementedError("Return ASNs as tuple of ints")
+        URL = f"https://stat.ripe.net/data/related-prefixes/data.json"
+        params = {"data_overload_limit": "ignore", "resource": str(ip_addr)}
+        resp = session.get(URL, params=params)
+        resp.raise_for_status()
+        from pprint import pprint
+        pprint(resp.json())
+        data = resp.json()
+
+        prefix_origin_pairs = list()
+        for inner in data["data"]["prefixes"]:
+            prefix_origin_pairs.append(
+                (ip_network(inner["prefix"]), int(inner["origin_asn"]))
+            )
+        assert prefix_origin_pairs, f"No prefixes found for {ip_addr}"
+        resp.close()
+
+        # Get most specific prefix origin paid
+        return sorted(prefix_origin_pairs, key=lambda x: x[0].prefixlen)[-1]

@@ -1,5 +1,5 @@
 from datetime import date
-from ip_address import ip_network
+from ipaddress import ip_network
 from pathlib import Path
 from typing import Optional
 
@@ -54,13 +54,12 @@ class TORRelayCollector:
 
         relevant_line = False
         for line in resp.text.split("\n"):
-            if line.startswith("vote-digest"):
+            if line.startswith("r "):
                 relevant_line = True
-                continue
             elif line.startswith("directory-footer"):
                 assert relevant_lines, "Didn't parse any TOR lines"
                 return tuple(relevant_lines)
-            elif relevant_line:
+            if relevant_line:
                 relevant_lines.append(line)
         raise NotImplementedError("Never reached directory footer")
 
@@ -83,7 +82,11 @@ class TORRelayCollector:
             sections = line.split()
             if sections[0] == "r":
                 raw_tor_data.append(dict())
-            raw_tor_data[-1][sections[0]] = sections[1:]
+            try:
+                raw_tor_data[-1][sections[0]] = sections[1:]
+            except IndexError:
+                print(sections)
+                raise
         return raw_tor_data
 
     def _init_roa_checker(self) -> ROAChecker:

@@ -1,38 +1,8 @@
-from pathlib import Path
-
-from bgpy.simulation_engine import ROVSimplePolicy
-from bgpy.enums import SpecialPercentAdoptions
-from bgpy.simulation_framework import (
-    Simulation,
-    SubprefixHijack,
-    ScenarioConfig,
-)
-
+from .tor_relay_collector import TORRelayCollector
 
 def main():
-    """Runs the defaults"""
-
-    # Simulation for the paper
-    sim = Simulation(
-        percent_adoptions=(
-            SpecialPercentAdoptions.ONLY_ONE,
-            0.1,
-            0.2,
-            0.5,
-            0.8,
-            0.99,
-            # Using only 1 AS not adopting causes extreme variance
-            # SpecialPercentAdoptions.ALL_BUT_ONE,
-        ),
-        scenario_configs=(
-            ScenarioConfig(ScenarioCls=SubprefixHijack, AdoptPolicyCls=ROVSimplePolicy),
-        ),
-        output_dir=Path("~/Desktop/main_ex").expanduser(),
-        num_trials=1,
-        parse_cpus=1,
-    )
-    sim.run()
-
+    TORRelayCollector().run()
+    print("GET STATISTICS ON THESE HERE, MAKE GRAPHS!!!")
 
 if __name__ == "__main__":
     main()
