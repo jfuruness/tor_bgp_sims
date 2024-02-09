@@ -95,15 +95,3 @@ if __name__ == '__main__':
 
     requests_cache.install_cache('ripe_stat_cache')
     relay_info_list = parse_consensus(consensus_data)
-
-    # for relay_info in relay_info_list:
-    #     print(f"Nickname: {relay_info.nickname}")
-    #     print(f"Fingerprint: {relay_info.fingerprint}")
-    #     print(f"IPv4 Address: {relay_info.ipv4_address}")
-    #     print(f"IPv6 Address: {relay_info.ipv6_address}")
-    #     print(f"Flags: {relay_info.flags}")
-    #     print(f"Version Number: {relay_info.version}")
-    #     print(f"Bandwidth: {relay_info.bandwidth}")
-    #     print(f"Prefixes: {relay_info.prefixes}")
-    #     print(f"ASNs: {relay_info.asns}")
-    #     print("\n")
