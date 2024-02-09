@@ -54,18 +54,18 @@ def main():
     #   How many guard not covered by ROA
     guard_ipv6_roa_not_covered = [x for x in relays if x.guard and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix]
     print(f"ipv6 Guard not covered by roa {len(guard_ipv6_roa_not_covered)}")
-    #   How many guard not covered by ROA and /26
+    #   How many guard not covered by ROA and /48
     guard_ipv6_not_covered_and_shortest = list()
     for x in relays:
-        if x.guard and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix and x.ipv6_prefix.prefixlen == 26:
+        if x.guard and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix and x.ipv6_prefix.prefixlen == 48:
             guard_ipv6_not_covered_and_shortest.append(x)
-    print(f"ipv6 Guard not covered by roa and /26 {len(guard_ipv6_not_covered_and_shortest)}")
-    #   How many guard not covered by ROA and shorter than /26
+    print(f"ipv6 Guard not covered by roa and /48 {len(guard_ipv6_not_covered_and_shortest)}")
+    #   How many guard not covered by ROA and shorter than /48
     guard_ipv6_not_covered_and_not_shortest = list()
     for x in relays:
-        if x.guard and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix and x.ipv6_prefix.prefixlen != 26:
+        if x.guard and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix and x.ipv6_prefix.prefixlen != 48:
             guard_ipv6_not_covered_and_not_shortest.append(x)
-    print(f"ipv6 Guard not covered by roa and not /26 {len(guard_ipv6_not_covered_and_not_shortest)}")
+    print(f"ipv6 Guard not covered by roa and not /48 {len(guard_ipv6_not_covered_and_not_shortest)}")
 
 
 
@@ -111,18 +111,18 @@ def main():
     #   How many exit not covered by ROA
     exit_ipv6_roa_not_covered = [x for x in relays if x.exit and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix]
     print(f"ipv6 Exit not covered by roa {len(exit_ipv6_roa_not_covered)}")
-    #   How many exit not covered by ROA and /26
+    #   How many exit not covered by ROA and /48
     exit_ipv6_not_covered_and_shortest = list()
     for x in relays:
-        if x.exit and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix and x.ipv6_prefix.prefixlen == 26:
+        if x.exit and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix and x.ipv6_prefix.prefixlen == 48:
             exit_ipv6_not_covered_and_shortest.append(x)
-    print(f"ipv6 Exit not covered by roa and /26 {len(exit_ipv6_not_covered_and_shortest)}")
-    #   How many exit not covered by ROA and shorter than /26
+    print(f"ipv6 Exit not covered by roa and /48 {len(exit_ipv6_not_covered_and_shortest)}")
+    #   How many exit not covered by ROA and shorter than /48
     exit_ipv6_not_covered_and_not_shortest = list()
     for x in relays:
-        if x.exit and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix and x.ipv6_prefix.prefixlen != 26:
+        if x.exit and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix and x.ipv6_prefix.prefixlen != 48:
             exit_ipv6_not_covered_and_not_shortest.append(x)
-    print(f"ipv6 Exit not covered by roa and not /26 {len(exit_ipv6_not_covered_and_not_shortest)}")
+    print(f"ipv6 Exit not covered by roa and not /48 {len(exit_ipv6_not_covered_and_not_shortest)}")
 
 
 if __name__ == "__main__":
