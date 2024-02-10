@@ -1,5 +1,6 @@
 from frozendict import frozendict
 
+from .tor_relay import TORRelay
 from .tor_relay_collector import TORRelayCollector
 
 

@@ -1,8 +1,17 @@
+from typing import Optional, Union
+
+from bgpy.enums import SpecialPercentAdoptions
+from bgpy.simulation_engine import BaseSimulationEngine
+from bgpy.simulation_framework import Scenario, ScenarioConfig
+from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import noop, PREPROCESS_ANNS_FUNC_TYPE
+
+from ..tor_relay_collector import get_tor_relay_ipv4_origin_guard_dict, TORRelay
+
 tor_relay_ipv4_origin_guard_dict= get_tor_relay_ipv4_origin_guard_dict()
 tor_relay_ipv4_origin_guard_keys = tuple(list(tor_relay_ipv4_origin_guard_dict.keys()))
 
 
-class ClientToGaurdScenario(Scenario):
+class ClientToGuardScenario(Scenario):
     """Attacker attempts to intercept traffic from client to gaurd by mitm gaurd"""
 
     tor_relay_ipv4_origin_guard_dict = tor_relay_ipv4_origin_guard_dict
@@ -92,7 +101,7 @@ class ClientToGaurdScenario(Scenario):
 
         # Victim
         assert self.num_victims == 1, "How is there >1 relay?"
-        assert len(self.victim_asns == 1, "How is there >1 relay?"
+        assert len(self.victim_asns) == 1, "How is there >1 relay?"
         [victim_asn] = self.victim_asns
         assert victim_asn == self.tor_relay.ipv4_origin
         if self.tor_relay.ipv4_roa_validity.is_valid():
