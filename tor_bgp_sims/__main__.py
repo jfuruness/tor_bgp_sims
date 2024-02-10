@@ -127,10 +127,6 @@ def main():
             exit_ipv6_not_covered_and_not_shortest.append(x)
     print(f"ipv6 Exit not covered by roa and not /48 {len(exit_ipv6_not_covered_and_not_shortest)}")
 
-    raise NotImplementedError(
-        "Need custom as graph analyzer class to only traceback from guard"
-        "AND MAKE SURE THIS DOESNT BREAK METRICS"
-    )
     raise NotImplementedError("Add hardcoded ROV ASNs")
     sim = Simulation(
         # We don't need percent adoptions here...
@@ -140,6 +136,7 @@ def main():
         scenario_configs=(
             ScenarioConfig(
                 ScenarioCls=ClientToGuardScenario,
+                AdoptPolicyCls=ROVSimplePolicy,
             ),
         ),
         output_dir=Path("~/Desktop/tor_client_to_guard").expanduser(),

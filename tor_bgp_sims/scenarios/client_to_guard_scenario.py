@@ -45,11 +45,30 @@ class ClientToGaurdScenario(Scenario):
             prev_scenario=prev_scenario,
             preprocess_anns_func=preprocess_anns_func,
         )
+        assert engine
+        self.engine = engine
 
     def _get_possible_victim_asns(self, *args, **kwargs) -> frozenset[int]:
         """Returns possible victim ASNs, defaulted from config"""
 
         return frozenset([self.tor_relay.ipv4_origin])
+
+    @property
+    def _untracked_asns(self) -> frozenset[int]:
+        """Anything in this list won't be tracked
+
+        Since we only want to traceback from guard and don't care about
+        other notes, add everything other than guard to here
+        """
+
+        assert self.engine
+        untracked_asns = frozenset(
+            [x for x in self.engine if x.asn != self.tor_relay.ipv4_origin]
+        )
+        # NOTE: this is just to get results quickly for the paper. DONT
+        # USE THIS ELSEWHERE!
+        del self.engine
+        return untracked_asns
 
     def get_announcements(self, *args, **kwargs) -> tuple["Ann", ...]:
         """Returns announcements
