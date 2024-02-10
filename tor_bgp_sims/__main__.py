@@ -16,6 +16,9 @@ def main():
     guards = [x for x in relays if x.guard]
     # how many are guard
     print(f"Guard relays: {len(guards)}")
+    # How many unique gaurd ASNs
+    unique_asn_ipv4_gaurds = set([x.ipv4_origin for x in relays if x.guard])
+    print(f"Guard relays with unique ipv4 ASNs: {len(unique_asn_ipv4_gaurds)}")
     # for ipv4:
     #   How many guard covered by ROA
     guard_ipv4_roa_covered = [x for x in relays if x.guard and not ROAValidity.is_unknown(x.ipv4_roa_validity)]
@@ -124,6 +127,27 @@ def main():
             exit_ipv6_not_covered_and_not_shortest.append(x)
     print(f"ipv6 Exit not covered by roa and not /48 {len(exit_ipv6_not_covered_and_not_shortest)}")
 
+    raise NotImplementedError(
+        "Need custom as graph analyzer class to only traceback from guard"
+        "AND MAKE SURE THIS DOESNT BREAK METRICS"
+    )
+    raise NotImplementedError("Add hardcoded ROV ASNs")
+    sim = Simulation(
+        # We don't need percent adoptions here...
+        percent_adoptions=(
+            SpecialPercentAdoptions.ONLY_ONE,
+        ),
+        scenario_configs=(
+            ScenarioConfig(
+                ScenarioCls=ClientToGuardScenario,
+            ),
+        ),
+        output_dir=Path("~/Desktop/tor_client_to_guard").expanduser(),
+        num_trials=1,
+        parse_cpus=1,
+    )
+    sim.run()
+    raise NotImplementedError("Raise trials to guard relays with uniq ipv4, and CPUs")
 
 if __name__ == "__main__":
     main()
