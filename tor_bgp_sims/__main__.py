@@ -1,4 +1,5 @@
 from collections import Counter
+from multiprocessing import cpu_count
 from pathlib import Path
 
 from frozendict import frozendict
@@ -6,12 +7,12 @@ from frozendict import frozendict
 from bgpy.enums import SpecialPercentAdoptions
 from bgpy.simulation_engine import ROVSimplePolicy
 from bgpy.simulation_framework import ScenarioConfig, Simulation
+from bgpy.simulation_framework.utils import get_country_asns
 
 from roa_checker import ROAValidity
-from rov_collector import rov_collector_classes
 
 from .tor_relay_collector import TORRelayCollector
-from .scenarios import ClientToGuardScenario
+from .scenarios import ClientToGuardScenario, USClientToGuardScenario
 
 class RealROVSimplePolicy(ROVSimplePolicy):
     name = "RealROV"
@@ -144,6 +145,8 @@ def main():
     json_path: Path = Path.home() / "Desktop" / "rov_info.json"
 
     if not json_path.exists():
+        # NOTE: This breaks pip. Just install individually for now
+        from rov_collector import rov_collector_classes
         for CollectorCls in rov_collector_classes:
             CollectorCls(json_path=json_path).run()  # type: ignore
 
@@ -171,6 +174,11 @@ def main():
         # We don't need percent adoptions here...
         percent_adoptions=(
             SpecialPercentAdoptions.ONLY_ONE,
+            .1,
+            .3,
+            .5,
+            .8,
+            .99
         ),
         scenario_configs=(
             ScenarioConfig(
@@ -180,11 +188,36 @@ def main():
             ),
         ),
         output_dir=Path("~/Desktop/tor_client_to_guard").expanduser(),
-        num_trials=1,
-        parse_cpus=1,
+        num_trials=len(unique_asn_ipv4_gaurds),
+        parse_cpus=cpu_count(),
     )
     sim.run()
-    raise NotImplementedError("Raise trials to guard relays with uniq ipv4, and CPUs")
+    # Oof, so janky. No no no.
+    ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = 0
+    sim = Simulation(
+        python_hash_seed=python_hash_seed,
+        # We don't need percent adoptions here...
+        percent_adoptions=(
+            SpecialPercentAdoptions.ONLY_ONE,
+            .1,
+            .3,
+            .5,
+            .8,
+            .99
+        ),
+        scenario_configs=(
+            ScenarioConfig(
+                ScenarioCls=USClientToGuardScenario,
+                AdoptPolicyCls=ROVSimplePolicy,
+                hardcoded_asn_cls_dict=get_real_world_rov_asn_cls_dict(),
+                override_attacker_asns=frozenset(get_country_asns("US")),
+            ),
+        ),
+        output_dir=Path("~/Desktop/tor_client_to_guard_us").expanduser(),
+        num_trials=len(unique_asn_ipv4_gaurds),
+        parse_cpus=cpu_count(),
+    )
+    sim.run()
 
 if __name__ == "__main__":
     main()

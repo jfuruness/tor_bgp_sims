@@ -1,13 +1,17 @@
 from typing import Optional, Union
 
-from bgpy.enums import SpecialPercentAdoptions
-from bgpy.simulation_engine import BaseSimulationEngine
+from bgpy.enums import SpecialPercentAdoptions, Timestamps, Relationships
+from bgpy.simulation_engine import BaseSimulationEngine, Announcement as Ann
 from bgpy.simulation_framework import Scenario, ScenarioConfig
-from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import noop, PREPROCESS_ANNS_FUNC_TYPE
+from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import (
+    noop, PREPROCESS_ANNS_FUNC_TYPE
+)
 
-from ..tor_relay_collector import get_tor_relay_ipv4_origin_guard_dict, TORRelay
+from roa_checker import ROAValidity
 
-tor_relay_ipv4_origin_guard_dict= get_tor_relay_ipv4_origin_guard_dict()
+from ..tor_relay_collector import get_tor_relay_ipv4_origin_guard_dict
+
+tor_relay_ipv4_origin_guard_dict = get_tor_relay_ipv4_origin_guard_dict()
 tor_relay_ipv4_origin_guard_keys = tuple(list(tor_relay_ipv4_origin_guard_dict.keys()))
 
 
@@ -16,7 +20,7 @@ class ClientToGuardScenario(Scenario):
 
     tor_relay_ipv4_origin_guard_dict = tor_relay_ipv4_origin_guard_dict
     tor_relay_ipv4_origin_guard_keys = tor_relay_ipv4_origin_guard_keys
-    tor_relay_ipv4_origin_guard_counter = 0
+    tor_relay_ipv4_origin_guard_counter = dict()
 
     def __init__(
         self,
@@ -38,19 +42,18 @@ class ClientToGuardScenario(Scenario):
             self.tor_relay = prev_scenario.tor_relay
         else:
             try:
-                origin_guard_asn = self.tor_relay_ipv4_origin_guard_keys[
-                    self.tor_relay_ipv4_origin_guard_counter
-                ]
+                counter = self.tor_relay_ipv4_origin_guard_counter.get(percent_adoption, 0)
+                origin_guard_asn = self.tor_relay_ipv4_origin_guard_keys[counter]
             except IndexError:
                 print("You have more trials than there are TOR ASNs")
                 raise
             self.tor_relay = self.tor_relay_ipv4_origin_guard_dict[origin_guard_asn][0]
-            self.tor_relay_ipv4_origin_guard_counter += 1
+            self.tor_relay_ipv4_origin_guard_counter[percent_adoption] = self.tor_relay_ipv4_origin_guard_counter.get(percent_adoption, 0) + 1
 
         super().__init__(
             scenario_config=scenario_config,
             percent_adoption=percent_adoption,
-            engine=prev_scenario,
+            engine=engine,
             prev_scenario=prev_scenario,
             preprocess_anns_func=preprocess_anns_func,
         )
@@ -72,14 +75,14 @@ class ClientToGuardScenario(Scenario):
 
         assert self.engine
         untracked_asns = frozenset(
-            [x for x in self.engine if x.asn != self.tor_relay.ipv4_origin]
+            [x for x in self.engine.as_graph if x.asn != self.tor_relay.ipv4_origin]
         )
         # NOTE: this is just to get results quickly for the paper. DONT
         # USE THIS ELSEWHERE!
-        del self.engine
+        # del self.engine
         return untracked_asns
 
-    def get_announcements(self, *args, **kwargs) -> tuple["Ann", ...]:
+    def _get_announcements(self, *args, **kwargs) -> tuple["Ann", ...]:
         """Returns announcements
 
         Attacker strategy:
@@ -104,7 +107,7 @@ class ClientToGuardScenario(Scenario):
         assert len(self.victim_asns) == 1, "How is there >1 relay?"
         [victim_asn] = self.victim_asns
         assert victim_asn == self.tor_relay.ipv4_origin
-        if self.tor_relay.ipv4_roa_validity.is_valid():
+        if ROAValidity.is_valid(self.tor_relay.ipv4_roa_validity):
             roa_valid_length = True
             roa_origin = victim_asn
         else:
@@ -126,7 +129,7 @@ class ClientToGuardScenario(Scenario):
 
         for attacker_asn in self.attacker_asns:
             # Covered by a ROA
-            if roa_length is not None:
+            if roa_valid_length is not None:
                 # Can't be more specific than a /24
                 if self.tor_relay.ipv4_prefix.prefixlen == 24:
                     # origin prefix hijack
