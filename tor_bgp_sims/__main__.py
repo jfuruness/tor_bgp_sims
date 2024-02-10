@@ -1,8 +1,13 @@
 from collections import Counter
 
 from roa_checker import ROAValidity
+from rov_collector import rov_collector_classes
 
 from .tor_relay_collector import TORRelayCollector
+
+class RealROVSimplePolicy(ROVSimplePolicy):
+    name = "RealROV"
+
 
 def main():
     relays = TORRelayCollector().run()
@@ -127,8 +132,34 @@ def main():
             exit_ipv6_not_covered_and_not_shortest.append(x)
     print(f"ipv6 Exit not covered by roa and not /48 {len(exit_ipv6_not_covered_and_not_shortest)}")
 
-    raise NotImplementedError("Add hardcoded ROV ASNs")
+
+    json_path: Path = Path.home() / "Desktop" / "rov_info.json"
+
+    if not json_path.exists():
+        for CollectorCls in rov_collector_classes:
+            CollectorCls(json_path=json_path).run()  # type: ignore
+
+    python_hash_seed = 0
+    def get_real_world_rov_asn_cls_dict():
+        import json
+        import random
+        random.seed(python_hash_seed)
+        with json_path.open() as f:
+            data = json.load(f)
+            hardcoded_dict = dict()
+            for asn, info_list in data.items():
+                max_percent = 0
+                # Calculate max_percent for each ASN
+                for info in info_list:
+                    max_percent = max(max_percent, float(info["percent"]))
+
+                # Use max_percent as the probability for inclusion
+                if random.random() * 100 < max_percent:
+                    hardcoded_dict[int(asn)] = RealROVSimplePolicy
+        return frozendict(hardcoded_dict)
+
     sim = Simulation(
+        python_hash_seed=python_hash_seed,
         # We don't need percent adoptions here...
         percent_adoptions=(
             SpecialPercentAdoptions.ONLY_ONE,
@@ -137,6 +168,7 @@ def main():
             ScenarioConfig(
                 ScenarioCls=ClientToGuardScenario,
                 AdoptPolicyCls=ROVSimplePolicy,
+                hardcoded_asn_cls_dict=get_real_world_rov_asn_cls_dict(),
             ),
         ),
         output_dir=Path("~/Desktop/tor_client_to_guard").expanduser(),
