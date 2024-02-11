@@ -84,8 +84,9 @@ class TORRelay:
     ipv4_roa_routed: ROARouted = None  # type: ignore
     ipv6_prefix: Optional[IPv6Network] = None
     ipv6_origin: Optional[int] = None
-    ipv6_roa_validity: Optional[ROAValidity] = None
-    ipv6_roa_routed: Optional[ROARouted] = None
+    # type ignoring since we set them in post init always
+    ipv6_roa_validity: ROAValidity = None  # type: ignore
+    ipv6_roa_routed: ROARouted = None  # type: ignore
 
     def __post_init__(
         self,
