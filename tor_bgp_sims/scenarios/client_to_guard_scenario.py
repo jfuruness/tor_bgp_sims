@@ -86,7 +86,7 @@ class ClientToGuardScenario(Scenario):
         # del self.engine
         return untracked_asns
 
-    def _get_announcements(self, *args, **kwargs) -> tuple["Ann", ...]:
+    def _get_announcements(self, engine, *args, **kwargs) -> tuple["Ann", ...]:
         """Returns announcements
 
         Attacker strategy:

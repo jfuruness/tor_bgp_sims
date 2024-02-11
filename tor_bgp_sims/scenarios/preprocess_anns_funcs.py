@@ -1,4 +1,5 @@
 from collections import deque
+import random
 from typing import Callable, Optional, TYPE_CHECKING
 
 from bgpy.simulation_engine import BGPPolicy, ASPASimplePolicy, PathendSimplePolicy

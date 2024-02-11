@@ -5,6 +5,7 @@ import sys
 
 from frozendict import frozendict
 
+from bgpy.as_graphs import CAIDAASGraphConstructor
 from bgpy.enums import ASGroups, SpecialPercentAdoptions
 from bgpy.simulation_engine import ROVSimplePolicy
 from bgpy.simulation_framework import ScenarioConfig, Simulation
@@ -175,7 +176,11 @@ def main():
 
     rov_dict = get_real_world_rov_asn_cls_dict()
 
-    """
+    bgp_dag = CAIDAASGraphConstructor(tsv_path=None).run()
+    us_asns = frozenset([x for x in get_country_asns("US") if x in bgp_dag.as_dict])
+
+    BASE_PATH = Path.home() / "Desktop" / "tor"
+
     sim = Simulation(
         python_hash_seed=python_hash_seed,
         # We don't need percent adoptions here...
@@ -194,7 +199,7 @@ def main():
                 hardcoded_asn_cls_dict=rov_dict,
             ),
         ),
-        output_dir=Path("~/Desktop/tor_client_to_guard").expanduser(),
+        output_dir=BASE_PATH / "client_to_guard_single_attacker",
         num_trials=len(unique_asn_ipv4_gaurds),
         parse_cpus=cpu_count(),
     )
@@ -217,16 +222,16 @@ def main():
                 ScenarioCls=ClientToGuardScenario,
                 AdoptPolicyCls=ROVSimplePolicy,
                 hardcoded_asn_cls_dict=rov_dict,
-                override_attacker_asns=frozenset(get_country_asns("US")),
+                override_attacker_asns=us_asns,
             ),
         ),
-        output_dir=Path("~/Desktop/tor_client_to_guard_us").expanduser(),
+        output_dir=BASE_PATH / "client_to_guard_us",
         num_trials=len(unique_asn_ipv4_gaurds),
         parse_cpus=cpu_count(),
     )
     sim.run()
     ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
-    """
+
     sim = Simulation(
         python_hash_seed=python_hash_seed,
         # We don't need percent adoptions here...
@@ -247,7 +252,7 @@ def main():
                 preprocess_anns_func=fifty_percent_covered_by_roa,
             ),
         ),
-        output_dir=Path("~/Desktop/tor_exit_to_dest_mh").expanduser(),
+        output_dir=BASE_PATH / "exit_to_dest_mh",
         num_trials=len(unique_asn_ipv4_exits),
         parse_cpus=cpu_count(),
         propagation_rounds=2,  # Required for leakage
@@ -272,11 +277,11 @@ def main():
                 AdoptPolicyCls=ROVSimplePolicy,
                 hardcoded_asn_cls_dict=rov_dict,
                 attacker_subcategory_attr=ASGroups.MULTIHOMED.value,
-                override_attacker_asns=frozenset(get_country_asns("US")),
+                override_attacker_asns=us_asns,
                 preprocess_anns_func=fifty_percent_covered_by_roa,
             ),
         ),
-        output_dir=Path("~/Desktop/tor_exit_to_dest_us").expanduser(),
+        output_dir=BASE_PATH / "exit_to_dest_us",
         num_trials=len(unique_asn_ipv4_exits),
         parse_cpus=cpu_count(),
         propagation_rounds=2,  # Required for leakage
