@@ -77,11 +77,12 @@ class TORRelay:
     session: InitVar[CachedSession]
     roa_checker: InitVar[ROAChecker]
     a: tuple[str, ...] = ()
-    ipv4_prefix: Optional[IPv4Network] = None
-    ipv4_origin: Optional[int] = None
-    ipv4_roa_validity: Optional[ROAValidity] = None
-    ipv4_roa_routed: Optional[ROARouted] = None
-    ipv6_prefix: Optional[IPv4Network] = None
+    # type ignoring since we set them in the post init always
+    ipv4_prefix: IPv4Network = None  # type: ignore
+    ipv4_origin: int = None  # type: ignore
+    ipv4_roa_validity: ROAValidity = None  # type: ignore
+    ipv4_roa_routed: ROARouted = None  # type: ignore
+    ipv6_prefix: Optional[IPv6Network] = None
     ipv6_origin: Optional[int] = None
     ipv6_roa_validity: Optional[ROAValidity] = None
     ipv6_roa_routed: Optional[ROARouted] = None
@@ -130,10 +131,12 @@ class TORRelay:
         ex: r seele AtNw etVuH1 2024-02-07 07:01:56 104.53.221.159 9001 0
         """
 
-        return ip_network(self.r[5])
+        rv = ip_network(self.r[5])
+        assert isinstance(rv, IPv4Network), "mypy type check"
+        return rv
 
     @property
-    def ipv6_addr(self) -> Optional[IPv6Network]:
+    def ipv6_addr(self) -> Optional[IPv6Network]:  # type: ignore
         """Returns IPv6 prefix"""
 
         if self.a:

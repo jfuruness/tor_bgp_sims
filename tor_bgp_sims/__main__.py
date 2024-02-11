@@ -257,7 +257,7 @@ def main():
             data = json.load(f)
             hardcoded_dict = dict()
             for asn, info_list in data.items():
-                max_percent = 0
+                max_percent: float = 0
                 # Calculate max_percent for each ASN
                 for info in info_list:
                     max_percent = max(max_percent, float(info["percent"]))
@@ -330,7 +330,7 @@ def main():
         propagation_rounds=2,  # Required for leakage
     )
     sim.run()
-    ExitToDestScenario.tor_relay_ipv4_origin_guard_counter = dict()
+    ExitToDestScenario.tor_relay_ipv4_origin_exit_counter = dict()
 
     sim = Simulation(
         python_hash_seed=python_hash_seed,
@@ -352,7 +352,7 @@ def main():
         propagation_rounds=2,  # Required for leakage
     )
     sim.run()
-    ExitToDestScenario.tor_relay_ipv4_origin_guard_counter = dict()
+    ExitToDestScenario.tor_relay_ipv4_origin_exit_counter = dict()
 
 
 if __name__ == "__main__":
