@@ -17,7 +17,7 @@ class TORRelayCollector:
     def __init__(
         self,
         requests_cache_db_path: Optional[Path] = None,
-        dl_date: date = date(2024, 2, 9)
+        dl_date: date = date(2024, 2, 9),
     ):
         # By default keep requests cached for a single day
         if requests_cache_db_path is None:
@@ -85,8 +85,7 @@ class TORRelayCollector:
         )
 
     def _get_raw_tor_data(
-        self,
-        relevant_lines: tuple[str, ...]
+        self, relevant_lines: tuple[str, ...]
     ) -> tuple[dict[str, tuple], ...]:
         """Gets raw TOR data from relevant parsed lines"""
 
@@ -108,8 +107,7 @@ class TORRelayCollector:
         roa_checker = ROAChecker()
         # TODO: Change this to historical roas
         for roa in ROACollector(
-            csv_path=None,
-            requests_cache_db_path=self.requests_cache_db_path
+            csv_path=None, requests_cache_db_path=self.requests_cache_db_path
         ).run():
             roa_checker.insert(ip_network(roa.prefix), roa.origin, roa.max_length)
         return roa_checker

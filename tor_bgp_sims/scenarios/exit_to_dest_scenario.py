@@ -4,7 +4,8 @@ from bgpy.enums import SpecialPercentAdoptions, Timestamps, Relationships
 from bgpy.simulation_engine import BaseSimulationEngine, Announcement as Ann
 from bgpy.simulation_framework import AccidentalRouteLeak, Scenario, ScenarioConfig
 from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import (
-    noop, PREPROCESS_ANNS_FUNC_TYPE
+    noop,
+    PREPROCESS_ANNS_FUNC_TYPE,
 )
 
 from roa_checker import ROAValidity
@@ -13,6 +14,7 @@ from ..tor_relay_collector import get_tor_relay_ipv4_origin_exit_dict
 
 tor_relay_ipv4_origin_exit_dict = get_tor_relay_ipv4_origin_exit_dict()
 tor_relay_ipv4_origin_exit_keys = tuple(list(tor_relay_ipv4_origin_exit_dict.keys()))
+
 
 class ExitToDestScenario(AccidentalRouteLeak):
     """Attacker attempts to intercept traffic from exit to dest to mitm dest
@@ -46,13 +48,17 @@ class ExitToDestScenario(AccidentalRouteLeak):
             self.tor_relay = prev_scenario.tor_relay
         else:
             try:
-                counter = self.tor_relay_ipv4_origin_exit_counter.get(percent_adoption, 0)
+                counter = self.tor_relay_ipv4_origin_exit_counter.get(
+                    percent_adoption, 0
+                )
                 origin_exit_asn = self.tor_relay_ipv4_origin_exit_keys[counter]
             except IndexError:
                 print("You have more trials than there are TOR ASNs")
                 raise
             self.tor_relay = self.tor_relay_ipv4_origin_exit_dict[origin_exit_asn][0]
-            self.tor_relay_ipv4_origin_exit_counter[percent_adoption] = self.tor_relay_ipv4_origin_exit_counter.get(percent_adoption, 0) + 1
+            self.tor_relay_ipv4_origin_exit_counter[percent_adoption] = (
+                self.tor_relay_ipv4_origin_exit_counter.get(percent_adoption, 0) + 1
+            )
 
         super().__init__(
             scenario_config=scenario_config,

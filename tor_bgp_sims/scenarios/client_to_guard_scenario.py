@@ -4,7 +4,8 @@ from bgpy.enums import SpecialPercentAdoptions, Timestamps, Relationships
 from bgpy.simulation_engine import BaseSimulationEngine, Announcement as Ann
 from bgpy.simulation_framework import Scenario, ScenarioConfig
 from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import (
-    noop, PREPROCESS_ANNS_FUNC_TYPE
+    noop,
+    PREPROCESS_ANNS_FUNC_TYPE,
 )
 
 from roa_checker import ROAValidity
@@ -46,13 +47,17 @@ class ClientToGuardScenario(Scenario):
             self.tor_relay = prev_scenario.tor_relay
         else:
             try:
-                counter = self.tor_relay_ipv4_origin_guard_counter.get(percent_adoption, 0)
+                counter = self.tor_relay_ipv4_origin_guard_counter.get(
+                    percent_adoption, 0
+                )
                 origin_guard_asn = self.tor_relay_ipv4_origin_guard_keys[counter]
             except IndexError:
                 print("You have more trials than there are TOR ASNs")
                 raise
             self.tor_relay = self.tor_relay_ipv4_origin_guard_dict[origin_guard_asn][0]
-            self.tor_relay_ipv4_origin_guard_counter[percent_adoption] = self.tor_relay_ipv4_origin_guard_counter.get(percent_adoption, 0) + 1
+            self.tor_relay_ipv4_origin_guard_counter[percent_adoption] = (
+                self.tor_relay_ipv4_origin_guard_counter.get(percent_adoption, 0) + 1
+            )
 
         super().__init__(
             scenario_config=scenario_config,
@@ -130,7 +135,6 @@ class ClientToGuardScenario(Scenario):
                 recv_relationship=Relationships.ORIGIN,
             )
         )
-
 
         # If victim is in attacker asns, that's an auto-win for attacker
         # so don't waste the compution time
