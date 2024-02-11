@@ -1,6 +1,7 @@
 from collections import Counter
 from multiprocessing import cpu_count
 from pathlib import Path
+import shutil
 import sys
 
 from frozendict import frozendict
@@ -353,6 +354,8 @@ def main():
     )
     sim.run()
     ExitToDestScenario.tor_relay_ipv4_origin_exit_counter = dict()
+
+    shutil.make_archive(str(BASE_PATH.parent / "tor.zip"), "zip", str(BASE_PATH))
 
 
 if __name__ == "__main__":
