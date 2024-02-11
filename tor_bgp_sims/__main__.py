@@ -1,6 +1,7 @@
 from collections import Counter
 from multiprocessing import cpu_count
 from pathlib import Path
+import sys
 
 from frozendict import frozendict
 
@@ -12,7 +13,7 @@ from bgpy.simulation_framework.utils import get_country_asns
 from roa_checker import ROAValidity
 
 from .tor_relay_collector import TORRelayCollector
-from .scenarios import ClientToGuardScenario, USClientToGuardScenario
+from .scenarios import ClientToGuardScenario
 
 class RealROVSimplePolicy(ROVSimplePolicy):
     name = "RealROV"
@@ -90,6 +91,9 @@ def main():
     exits = [x for x in relays if x.exit]
     # how many are exit
     print(f"Exit relays: {len(exits)}")
+    # How many unique exit ASNs
+    unique_asn_ipv4_exits = set([x.ipv4_origin for x in relays if x.exit])
+    print(f"Exit relays with unique ipv4 ASNs: {len(unique_asn_ipv4_exits)}")
     # for ipv4:
     #   How many exit covered by ROA
     exit_ipv4_roa_covered = [x for x in relays if x.exit and not ROAValidity.is_unknown(x.ipv4_roa_validity)]
@@ -169,6 +173,9 @@ def main():
                     hardcoded_dict[int(asn)] = RealROVSimplePolicy
         return frozendict(hardcoded_dict)
 
+    rov_dict = get_real_world_rov_asn_cls_dict()
+
+    """
     sim = Simulation(
         python_hash_seed=python_hash_seed,
         # We don't need percent adoptions here...
@@ -184,7 +191,7 @@ def main():
             ScenarioConfig(
                 ScenarioCls=ClientToGuardScenario,
                 AdoptPolicyCls=ROVSimplePolicy,
-                hardcoded_asn_cls_dict=get_real_world_rov_asn_cls_dict(),
+                hardcoded_asn_cls_dict=rov_dict,
             ),
         ),
         output_dir=Path("~/Desktop/tor_client_to_guard").expanduser(),
@@ -193,7 +200,7 @@ def main():
     )
     sim.run()
     # Oof, so janky. No no no.
-    ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = 0
+    ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
     sim = Simulation(
         python_hash_seed=python_hash_seed,
         # We don't need percent adoptions here...
@@ -207,9 +214,9 @@ def main():
         ),
         scenario_configs=(
             ScenarioConfig(
-                ScenarioCls=USClientToGuardScenario,
+                ScenarioCls=ClientToGuardScenario,
                 AdoptPolicyCls=ROVSimplePolicy,
-                hardcoded_asn_cls_dict=get_real_world_rov_asn_cls_dict(),
+                hardcoded_asn_cls_dict=rov_dict,
                 override_attacker_asns=frozenset(get_country_asns("US")),
             ),
         ),
@@ -218,6 +225,64 @@ def main():
         parse_cpus=cpu_count(),
     )
     sim.run()
+    ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
+    """
+    sim = Simulation(
+        python_hash_seed=python_hash_seed,
+        # We don't need percent adoptions here...
+        percent_adoptions=(
+            SpecialPercentAdoptions.ONLY_ONE,
+            .1,
+            .3,
+            .5,
+            .8,
+            .99
+        ),
+        scenario_configs=(
+            ScenarioConfig(
+                ScenarioCls=ExitToDestScenario,
+                AdoptPolicyCls=ROVSimplePolicy,
+                hardcoded_asn_cls_dict=rov_dict,
+                attacker_subcategory_attr=ASGroups.MULTIHOMED.value,
+                preprocessed_anns_func=fifty_percent_covered_by_roa,
+            ),
+        ),
+        output_dir=Path("~/Desktop/tor_exit_to_dest_mh").expanduser(),
+        num_trials=len(unique_asn_ipv4_exits),
+        parse_cpus=cpu_count(),
+        propagation_rounds=2,  # Required for leakage
+    )
+    sim.run()
+    ExitToDestScenario.tor_relay_ipv4_origin_guard_counter = dict()
+
+    sim = Simulation(
+        python_hash_seed=python_hash_seed,
+        # We don't need percent adoptions here...
+        percent_adoptions=(
+            SpecialPercentAdoptions.ONLY_ONE,
+            .1,
+            .3,
+            .5,
+            .8,
+            .99
+        ),
+        scenario_configs=(
+            ScenarioConfig(
+                ScenarioCls=ExitToDestScenario,
+                AdoptPolicyCls=ROVSimplePolicy,
+                hardcoded_asn_cls_dict=rov_dict,
+                attacker_subcategory_attr=ASGroups.MULTIHOMED.value,
+                override_attacker_asns=frozenset(get_country_asns("US")),
+                preprocessed_anns_func=fifty_percent_covered_by_roa,
+            ),
+        ),
+        output_dir=Path("~/Desktop/tor_exit_to_dest_us").expanduser(),
+        num_trials=len(unique_asn_ipv4_exits),
+        parse_cpus=cpu_count(),
+        propagation_rounds=2,  # Required for leakage
+    )
+    sim.run()
+    ExitToDestScenario.tor_relay_ipv4_origin_guard_counter = dict()
 
 if __name__ == "__main__":
     main()
