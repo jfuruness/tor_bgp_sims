@@ -1,14 +1,12 @@
 from typing import Optional, Union
 
-from bgpy.enums import SpecialPercentAdoptions, Timestamps, Relationships
-from bgpy.simulation_engine import BaseSimulationEngine, Announcement as Ann
+from bgpy.enums import SpecialPercentAdoptions
+from bgpy.simulation_engine import BaseSimulationEngine
 from bgpy.simulation_framework import AccidentalRouteLeak, Scenario, ScenarioConfig
 from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import (
     noop,
     PREPROCESS_ANNS_FUNC_TYPE,
 )
-
-from roa_checker import ROAValidity
 
 from ..tor_relay_collector import get_tor_relay_ipv4_origin_exit_dict
 

@@ -1,14 +1,9 @@
-from collections import deque
 import random
-from typing import Callable, Optional, TYPE_CHECKING
-
-from bgpy.simulation_engine import BGPPolicy, ASPASimplePolicy, PathendSimplePolicy
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from bgpy.as_graphs import AS
     from bgpy.simulation_framework.scenario import Scenario
     from bgpy.simulation_engine import Announcement as Ann, BaseSimulationEngine
-    from bgpy.simulation_engine import Policy
 
 
 def fifty_percent_covered_by_roa(

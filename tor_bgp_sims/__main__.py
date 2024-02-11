@@ -286,7 +286,7 @@ def main():
             ),
         ),
         output_dir=BASE_PATH / "client_to_guard_single_attacker",
-        num_trials=len(unique_asn_ipv4_gaurds),
+        num_trials=1 if "quick" in str(sys.argv) else len(unique_asn_ipv4_gaurds),
         parse_cpus=cpu_count(),
     )
     sim.run()
@@ -305,7 +305,7 @@ def main():
             ),
         ),
         output_dir=BASE_PATH / "client_to_guard_us",
-        num_trials=len(unique_asn_ipv4_gaurds),
+        num_trials=1 if "quick" in str(sys.argv) else len(unique_asn_ipv4_gaurds),
         parse_cpus=cpu_count(),
     )
     sim.run()
@@ -325,7 +325,7 @@ def main():
             ),
         ),
         output_dir=BASE_PATH / "exit_to_dest_mh",
-        num_trials=len(unique_asn_ipv4_exits),
+        num_trials=1 if "quick" in str(sys.argv) else len(unique_asn_ipv4_exits),
         parse_cpus=cpu_count(),
         propagation_rounds=2,  # Required for leakage
     )
@@ -347,7 +347,7 @@ def main():
             ),
         ),
         output_dir=BASE_PATH / "exit_to_dest_us",
-        num_trials=len(unique_asn_ipv4_exits),
+        num_trials=1 if "quick" in str(sys.argv) else len(unique_asn_ipv4_exits),
         parse_cpus=cpu_count(),
         propagation_rounds=2,  # Required for leakage
     )

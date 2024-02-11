@@ -171,7 +171,7 @@ class TORRelay:
     ) -> tuple[IPv4Network | IPv6Network, int]:
         """Returns ASNs and prefixesusing RIPE from a given IP addr"""
 
-        URL = f"https://stat.ripe.net/data/related-prefixes/data.json"
+        URL = "https://stat.ripe.net/data/related-prefixes/data.json"
         params = {"data_overload_limit": "ignore", "resource": str(ip_addr)}
         resp = session.get(URL, params=params)
         resp.raise_for_status()
