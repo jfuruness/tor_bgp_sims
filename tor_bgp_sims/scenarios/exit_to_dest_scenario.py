@@ -24,9 +24,9 @@ class ExitToDestScenario(AccidentalRouteLeak):
 
     tor_relay_ipv4_origin_exit_dict = tor_relay_ipv4_origin_exit_dict
     tor_relay_ipv4_origin_exit_keys = tor_relay_ipv4_origin_exit_keys
-    tor_relay_ipv4_origin_exit_counter: dict[float | SpecialPercentAdoptions, int] = (
-        dict()
-    )
+    tor_relay_ipv4_origin_exit_counter: dict[
+        float | SpecialPercentAdoptions, int
+    ] = dict()
 
     def __init__(
         self,

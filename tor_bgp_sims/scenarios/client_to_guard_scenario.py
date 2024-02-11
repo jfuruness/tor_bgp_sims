@@ -25,9 +25,9 @@ class ClientToGuardScenario(Scenario):
 
     tor_relay_ipv4_origin_guard_dict = tor_relay_ipv4_origin_guard_dict
     tor_relay_ipv4_origin_guard_keys = tor_relay_ipv4_origin_guard_keys
-    tor_relay_ipv4_origin_guard_counter: dict[float | SpecialPercentAdoptions, int] = (
-        dict()
-    )
+    tor_relay_ipv4_origin_guard_counter: dict[
+        float | SpecialPercentAdoptions, int
+    ] = dict()
 
     def __init__(
         self,
