@@ -8,7 +8,7 @@ from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import (
     PREPROCESS_ANNS_FUNC_TYPE,
 )
 
-from ..tor_relay_collector import get_tor_relay_ipv4_origin_exit_dict
+from ..tor_relay_collector import get_tor_relay_ipv4_origin_exit_dict, TORRelay
 
 tor_relay_ipv4_origin_exit_dict = get_tor_relay_ipv4_origin_exit_dict()
 tor_relay_ipv4_origin_exit_keys = tuple(list(tor_relay_ipv4_origin_exit_dict.keys()))
@@ -24,7 +24,9 @@ class ExitToDestScenario(AccidentalRouteLeak):
 
     tor_relay_ipv4_origin_exit_dict = tor_relay_ipv4_origin_exit_dict
     tor_relay_ipv4_origin_exit_keys = tor_relay_ipv4_origin_exit_keys
-    tor_relay_ipv4_origin_exit_counter = dict()
+    tor_relay_ipv4_origin_exit_counter: dict[float | SpecialPercentAdoptions, int] = (
+        dict()
+    )
 
     def __init__(
         self,
@@ -43,7 +45,8 @@ class ExitToDestScenario(AccidentalRouteLeak):
 
         # Add the TOR relay to the scenario
         if prev_scenario:
-            self.tor_relay = prev_scenario.tor_relay
+            assert isinstance(prev_scenario, ExitToDestScenario), "for mypy"
+            self.tor_relay: TORRelay = prev_scenario.tor_relay
         else:
             try:
                 counter = self.tor_relay_ipv4_origin_exit_counter.get(

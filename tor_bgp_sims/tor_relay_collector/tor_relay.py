@@ -140,7 +140,9 @@ class TORRelay:
         """Returns IPv6 prefix"""
 
         if self.a:
-            return ip_network(self.a[0].split("]")[0][1:])
+            rv = ip_network(self.a[0].split("]")[0][1:])
+            assert isinstance(rv, IPv6Network), "for mypy"
+            return rv
 
     @property
     def guard(self) -> bool:

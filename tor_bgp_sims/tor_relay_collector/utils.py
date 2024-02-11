@@ -8,7 +8,7 @@ def get_tor_relay_ipv4_origin_guard_dict() -> frozendict[int, tuple[TORRelay, ..
     """Gets IPv4 TOR Relay information"""
 
     relays = TORRelayCollector().run()
-    data = dict()
+    data: dict[int, list[TORRelay]] = dict()
     for relay in relays:
         if not relay.guard:
             continue
@@ -24,7 +24,7 @@ def get_tor_relay_ipv4_origin_exit_dict() -> frozendict[int, tuple[TORRelay, ...
     """Gets IPv4 TOR Relay information"""
 
     relays = TORRelayCollector().run()
-    data = dict()
+    data: dict[int, list[TORRelay]] = dict()
     for relay in relays:
         if not relay.exit:
             continue

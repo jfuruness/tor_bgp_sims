@@ -38,7 +38,7 @@ class TORRelayCollector:
                 pickle.dump(self._parse_tor_relays(), f)
 
         with pickle_path.open("rb") as f:
-            return pickle.load(f)
+            return pickle.load(f)  # type: ignore
 
     def _parse_tor_relays(self) -> tuple[TORRelay, ...]:
         """Parses TOR relays from the consensus URL
@@ -63,7 +63,7 @@ class TORRelayCollector:
         resp = self.session.get(self._get_tor_relay_url())
         resp.raise_for_status()
 
-        relevant_lines = list()
+        relevant_lines: list[str] = list()
 
         relevant_line = False
         for line in resp.text.split("\n"):
@@ -86,10 +86,10 @@ class TORRelayCollector:
 
     def _get_raw_tor_data(
         self, relevant_lines: tuple[str, ...]
-    ) -> tuple[dict[str, tuple], ...]:
+    ) -> tuple[dict[str, tuple[str, ...]], ...]:
         """Gets raw TOR data from relevant parsed lines"""
 
-        raw_tor_data = list()
+        raw_tor_data: list[dict[str, list[str]]] = list()
         for line in relevant_lines:
             sections = line.split()
             if sections[0] == "r":
@@ -99,7 +99,7 @@ class TORRelayCollector:
             except IndexError:
                 print(sections)
                 raise
-        return raw_tor_data
+        return tuple([{k: tuple(v) for k, v in x.items()} for x in raw_tor_data])
 
     def _init_roa_checker(self) -> ROAChecker:
         """Downloads ROAs and returns ROAChecker"""

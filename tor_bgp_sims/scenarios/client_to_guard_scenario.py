@@ -10,7 +10,7 @@ from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import (
 
 from roa_checker import ROAValidity
 
-from ..tor_relay_collector import get_tor_relay_ipv4_origin_guard_dict
+from ..tor_relay_collector import get_tor_relay_ipv4_origin_guard_dict, TORRelay
 
 tor_relay_ipv4_origin_guard_dict = get_tor_relay_ipv4_origin_guard_dict()
 tor_relay_ipv4_origin_guard_keys = tuple(list(tor_relay_ipv4_origin_guard_dict.keys()))
@@ -25,7 +25,9 @@ class ClientToGuardScenario(Scenario):
 
     tor_relay_ipv4_origin_guard_dict = tor_relay_ipv4_origin_guard_dict
     tor_relay_ipv4_origin_guard_keys = tor_relay_ipv4_origin_guard_keys
-    tor_relay_ipv4_origin_guard_counter = dict()
+    tor_relay_ipv4_origin_guard_counter: dict[float | SpecialPercentAdoptions, int] = (
+        dict()
+    )
 
     def __init__(
         self,
@@ -44,7 +46,8 @@ class ClientToGuardScenario(Scenario):
 
         # Add the TOR relay to the scenario
         if prev_scenario:
-            self.tor_relay = prev_scenario.tor_relay
+            assert isinstance(prev_scenario, ClientToGuardScenario), "for mypy"
+            self.tor_relay: TORRelay = prev_scenario.tor_relay
         else:
             try:
                 counter = self.tor_relay_ipv4_origin_guard_counter.get(
@@ -112,7 +115,7 @@ class ClientToGuardScenario(Scenario):
         anns = list()
 
         # Victim
-        assert self.num_victims == 1, "How is there >1 relay?"
+        assert self.scenario_config.num_victims == 1, "How is there >1 relay?"
         assert len(self.victim_asns) == 1, "How is there >1 relay?"
         [victim_asn] = self.victim_asns
         assert victim_asn == self.tor_relay.ipv4_origin
