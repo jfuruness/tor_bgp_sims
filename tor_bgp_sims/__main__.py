@@ -5,7 +5,7 @@ import sys
 
 from frozendict import frozendict
 
-from bgpy.enums import SpecialPercentAdoptions
+from bgpy.enums import ASGroups, SpecialPercentAdoptions
 from bgpy.simulation_engine import ROVSimplePolicy
 from bgpy.simulation_framework import ScenarioConfig, Simulation
 from bgpy.simulation_framework.utils import get_country_asns
@@ -13,7 +13,7 @@ from bgpy.simulation_framework.utils import get_country_asns
 from roa_checker import ROAValidity
 
 from .tor_relay_collector import TORRelayCollector
-from .scenarios import ClientToGuardScenario
+from .scenarios import ClientToGuardScenario, ExitToDestScenario, fifty_percent_covered_by_roa
 
 class RealROVSimplePolicy(ROVSimplePolicy):
     name = "RealROV"
@@ -244,7 +244,7 @@ def main():
                 AdoptPolicyCls=ROVSimplePolicy,
                 hardcoded_asn_cls_dict=rov_dict,
                 attacker_subcategory_attr=ASGroups.MULTIHOMED.value,
-                preprocessed_anns_func=fifty_percent_covered_by_roa,
+                preprocess_anns_func=fifty_percent_covered_by_roa,
             ),
         ),
         output_dir=Path("~/Desktop/tor_exit_to_dest_mh").expanduser(),
@@ -273,7 +273,7 @@ def main():
                 hardcoded_asn_cls_dict=rov_dict,
                 attacker_subcategory_attr=ASGroups.MULTIHOMED.value,
                 override_attacker_asns=frozenset(get_country_asns("US")),
-                preprocessed_anns_func=fifty_percent_covered_by_roa,
+                preprocess_anns_func=fifty_percent_covered_by_roa,
             ),
         ),
         output_dir=Path("~/Desktop/tor_exit_to_dest_us").expanduser(),
