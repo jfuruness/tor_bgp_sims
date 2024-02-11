@@ -272,6 +272,7 @@ def main():
 
     bgp_dag = CAIDAASGraphConstructor(tsv_path=None).run()
     us_asns = frozenset([x for x in get_country_asns("US") if x in bgp_dag.as_dict])
+    del bgp_dag  # let RAM be reclaimed
 
     BASE_PATH = Path.home() / "Desktop" / "tor"
 
