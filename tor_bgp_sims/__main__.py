@@ -319,6 +319,46 @@ def main():
         percent_adoptions=(SpecialPercentAdoptions.ONLY_ONE, 0.1, 0.3, 0.5, 0.8, 0.99),
         scenario_configs=(
             ScenarioConfig(
+                ScenarioCls=ClientToGuardScenario,
+                AdoptPolicyCls=ROVSimplePolicy,
+                hardcoded_asn_cls_dict=rov_dict,
+                attacker_subcategory_attr=ASGroups.MULTIHOMED.value,
+            ),
+        ),
+        output_dir=BASE_PATH / "client_to_guard_mh",
+        num_trials=1 if "quick" in str(sys.argv) else len(unique_asn_ipv4_gaurds),
+        parse_cpus=cpu_count(),
+    )
+    sim.run()
+    # Oof, so janky. No no no.
+    ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
+    sim = Simulation(
+        python_hash_seed=python_hash_seed,
+        # We don't need percent adoptions here...
+        percent_adoptions=(SpecialPercentAdoptions.ONLY_ONE, 0.1, 0.3, 0.5, 0.8, 0.99),
+        scenario_configs=(
+            ScenarioConfig(
+                ScenarioCls=ClientToGuardScenario,
+                AdoptPolicyCls=ROVSimplePolicy,
+                hardcoded_asn_cls_dict=rov_dict,
+                attacker_subcategory_attr=ASGroups.MULTIHOMED.value,
+                override_attacker_asns=us_asns,
+            ),
+        ),
+        output_dir=BASE_PATH / "client_to_guard_us_mh",
+        num_trials=1 if "quick" in str(sys.argv) else len(unique_asn_ipv4_gaurds),
+        parse_cpus=cpu_count(),
+    )
+    sim.run()
+    ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
+
+
+    sim = Simulation(
+        python_hash_seed=python_hash_seed,
+        # We don't need percent adoptions here...
+        percent_adoptions=(SpecialPercentAdoptions.ONLY_ONE, 0.1, 0.3, 0.5, 0.8, 0.99),
+        scenario_configs=(
+            ScenarioConfig(
                 ScenarioCls=ExitToDestScenario,
                 AdoptPolicyCls=ROVSimplePolicy,
                 hardcoded_asn_cls_dict=rov_dict,
