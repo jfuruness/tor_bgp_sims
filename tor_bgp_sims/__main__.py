@@ -321,7 +321,7 @@ def main():
     )
     sim.run(**run_kwargs)
     ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
-
+    """
     sim = Simulation(
         python_hash_seed=python_hash_seed,
         # We don't need percent adoptions here...
@@ -360,7 +360,7 @@ def main():
     )
     sim.run(**run_kwargs)
     ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
-
+    """
 
     sim = Simulation(
         python_hash_seed=python_hash_seed,
