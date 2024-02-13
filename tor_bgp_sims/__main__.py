@@ -8,12 +8,13 @@ from frozendict import frozendict
 
 from bgpy.as_graphs import CAIDAASGraphConstructor
 from bgpy.enums import ASGroups, SpecialPercentAdoptions
-from bgpy.simulation_engine import ROVSimplePolicy
+from bgpy.simulation_engine import ROVSimplePolicy, Policy
 from bgpy.simulation_framework import ScenarioConfig, Simulation
 from bgpy.simulation_framework.utils import get_country_asns
 
 from roa_checker import ROAValidity
 
+from .tor_graph_factory import TORGraphFactory
 from .tor_relay_collector import TORRelayCollector
 from .scenarios import (
     ClientToGuardScenario,
@@ -279,7 +280,7 @@ def main():
     sim = Simulation(
         python_hash_seed=python_hash_seed,
         # We don't need percent adoptions here...
-        percent_adoptions=(SpecialPercentAdoptions.ONLY_ONE, 0.1, 0.3, 0.5, 0.8, 0.99),
+        percent_adoptions=(SpecialPercentAdoptions.ONLY_ONE,),# 0.1, 0.3, 0.5, 0.8, 0.99),
         scenario_configs=(
             ScenarioConfig(
                 ScenarioCls=ClientToGuardScenario,
@@ -291,7 +292,15 @@ def main():
         num_trials=1 if "quick" in str(sys.argv) else len(unique_asn_ipv4_gaurds),
         parse_cpus=cpu_count(),
     )
-    sim.run()
+    run_kwargs = {
+        "GraphFactoryCls": TORGraphFactory,
+        "graph_factory_kwargs": {
+            "label_replacement_dict": {
+                Policy.name: "Aggregate",
+            }
+        }
+    }
+    sim.run(**run_kwargs)
     # Oof, so janky. No no no.
     ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
     sim = Simulation(
@@ -310,7 +319,7 @@ def main():
         num_trials=1 if "quick" in str(sys.argv) else len(unique_asn_ipv4_gaurds),
         parse_cpus=cpu_count(),
     )
-    sim.run()
+    sim.run(**run_kwargs)
     ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
 
     sim = Simulation(
@@ -329,7 +338,7 @@ def main():
         num_trials=1 if "quick" in str(sys.argv) else len(unique_asn_ipv4_gaurds),
         parse_cpus=cpu_count(),
     )
-    sim.run()
+    sim.run(**run_kwargs)
     # Oof, so janky. No no no.
     ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
     sim = Simulation(
@@ -349,7 +358,7 @@ def main():
         num_trials=1 if "quick" in str(sys.argv) else len(unique_asn_ipv4_gaurds),
         parse_cpus=cpu_count(),
     )
-    sim.run()
+    sim.run(**run_kwargs)
     ClientToGuardScenario.tor_relay_ipv4_origin_guard_counter = dict()
 
 
@@ -371,7 +380,7 @@ def main():
         parse_cpus=cpu_count(),
         propagation_rounds=2,  # Required for leakage
     )
-    sim.run()
+    sim.run(**run_kwargs)
     ExitToDestScenario.tor_relay_ipv4_origin_exit_counter = dict()
 
     sim = Simulation(
@@ -393,7 +402,7 @@ def main():
         parse_cpus=cpu_count(),
         propagation_rounds=2,  # Required for leakage
     )
-    sim.run()
+    sim.run(**run_kwargs)
     ExitToDestScenario.tor_relay_ipv4_origin_exit_counter = dict()
 
     shutil.make_archive(str(BASE_PATH.parent / "tor.zip"), "zip", str(BASE_PATH))

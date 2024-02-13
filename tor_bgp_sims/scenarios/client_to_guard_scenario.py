@@ -1,7 +1,9 @@
+import random
 from typing import Optional, Union
 
 from bgpy.enums import SpecialPercentAdoptions, Timestamps, Relationships
 from bgpy.simulation_engine import BaseSimulationEngine, Announcement as Ann
+from bgpy.simulation_engine import Policy
 from bgpy.simulation_framework import Scenario, ScenarioConfig
 from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import (
     noop,
@@ -10,6 +12,9 @@ from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import (
 
 from roa_checker import ROAValidity
 
+from ..policies import (
+    GuardValid24, GuardValidNot24, GuardNotValid24, GuardNotValidNot24
+)
 from ..tor_relay_collector import get_tor_relay_ipv4_origin_guard_dict, TORRelay
 
 tor_relay_ipv4_origin_guard_dict = get_tor_relay_ipv4_origin_guard_dict()
@@ -55,9 +60,12 @@ class ClientToGuardScenario(Scenario):
                 )
                 origin_guard_asn = self.tor_relay_ipv4_origin_guard_keys[counter]
             except IndexError:
-                print("You have more trials than there are TOR ASNs")
-                raise
-            self.tor_relay = self.tor_relay_ipv4_origin_guard_dict[origin_guard_asn][0]
+                self.tor_relay_ipv4_origin_guard_counter[percent_adoption] = 0
+                counter = 0
+                origin_guard_asn = self.tor_relay_ipv4_origin_guard_keys[counter]
+            self.tor_relay = random.choice(
+                self.tor_relay_ipv4_origin_guard_dict[origin_guard_asn]
+            )
             self.tor_relay_ipv4_origin_guard_counter[percent_adoption] = (
                 self.tor_relay_ipv4_origin_guard_counter.get(percent_adoption, 0) + 1
             )
@@ -87,12 +95,35 @@ class ClientToGuardScenario(Scenario):
 
         assert self.engine
         untracked_asns = frozenset(
-            [x for x in self.engine.as_graph if x.asn != self.tor_relay.ipv4_origin]
+            [x.asn for x in self.engine.as_graph if x.asn != self.tor_relay.ipv4_origin]
         )
         # NOTE: this is just to get results quickly for the paper. DONT
         # USE THIS ELSEWHERE!
         # del self.engine
         return untracked_asns
+
+    def _get_randomized_non_default_asn_cls_dict(
+        self,
+        engine: BaseSimulationEngine,
+    ) -> dict[int, type[Policy]]:
+        """Sets the guard relays to a certain policy for tracking purposes"""
+
+        non_default_asn_cls_dict = super()._get_randomized_non_default_asn_cls_dict(
+            engine
+        )
+        is_24 = self.tor_relay.ipv4_prefix.prefixlen == 24
+        valid_by_roa = ROAValidity.is_valid(self.tor_relay.ipv4_roa_validity)
+        if valid_by_roa and is_24:
+            PolicyCls = GuardValid24
+        elif valid_by_roa and not is_24:
+            PolicyCls = GuardValidNot24
+        elif not valid_by_roa and is_24:
+            PolicyCls = GuardNotValid24
+        elif not valid_by_roa and not is_24:
+            PolicyCls = GuardNotValidNot24
+
+        non_default_asn_cls_dict[self.tor_relay.ipv4_origin] = PolicyCls
+        return non_default_asn_cls_dict
 
     def _get_announcements(self, engine, *args, **kwargs) -> tuple["Ann", ...]:
         """Returns announcements
@@ -158,7 +189,7 @@ class ClientToGuardScenario(Scenario):
                                 as_path=(attacker_asn, victim_asn),
                                 timestamp=Timestamps.ATTACKER.value,
                                 seed_asn=attacker_asn,
-                                roa_valid_length=False,
+                                roa_valid_length=True,
                                 roa_origin=victim_asn,
                                 recv_relationship=Relationships.ORIGIN,
                             )
@@ -172,7 +203,7 @@ class ClientToGuardScenario(Scenario):
                                 as_path=(attacker_asn, victim_asn),
                                 timestamp=Timestamps.ATTACKER.value,
                                 seed_asn=attacker_asn,
-                                roa_valid_length=False,
+                                roa_valid_length=True,
                                 roa_origin=victim_asn,
                                 recv_relationship=Relationships.ORIGIN,
                             )

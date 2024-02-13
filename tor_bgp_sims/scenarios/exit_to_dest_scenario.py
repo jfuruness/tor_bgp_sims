@@ -1,3 +1,4 @@
+import random
 from typing import Optional, Union
 
 from bgpy.enums import SpecialPercentAdoptions
@@ -54,9 +55,12 @@ class ExitToDestScenario(AccidentalRouteLeak):
                 )
                 origin_exit_asn = self.tor_relay_ipv4_origin_exit_keys[counter]
             except IndexError:
-                print("You have more trials than there are TOR ASNs")
-                raise
-            self.tor_relay = self.tor_relay_ipv4_origin_exit_dict[origin_exit_asn][0]
+                self.tor_relay_ipv4_origin_exit_counter[percent_adoption] = 0
+                counter = 0
+                origin_exit_asn = self.tor_relay_ipv4_origin_exit_keys[counter]
+            self.tor_relay = random.choice(
+                self.tor_relay_ipv4_origin_exit_dict[origin_exit_asn]
+            )
             self.tor_relay_ipv4_origin_exit_counter[percent_adoption] = (
                 self.tor_relay_ipv4_origin_exit_counter.get(percent_adoption, 0) + 1
             )
@@ -81,7 +85,7 @@ class ExitToDestScenario(AccidentalRouteLeak):
 
         assert self.engine
         untracked_asns = frozenset(
-            [x for x in self.engine.as_graph if x.asn != self.tor_relay.ipv4_origin]
+            [x.asn for x in self.engine.as_graph if x.asn != self.tor_relay.ipv4_origin]
         )
         # NOTE: this is just to get results quickly for the paper. DONT
         # USE THIS ELSEWHERE!
