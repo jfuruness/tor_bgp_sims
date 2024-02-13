@@ -85,23 +85,6 @@ class ClientToGuardScenario(Scenario):
 
         return frozenset([self.tor_relay.ipv4_origin])
 
-    @property
-    def _untracked_asns(self) -> frozenset[int]:
-        """Anything in this list won't be tracked
-
-        Since we only want to traceback from guard and don't care about
-        other notes, add everything other than guard to here
-        """
-
-        assert self.engine
-        untracked_asns = frozenset(
-            [x.asn for x in self.engine.as_graph if x.asn != self.tor_relay.ipv4_origin]
-        )
-        # NOTE: this is just to get results quickly for the paper. DONT
-        # USE THIS ELSEWHERE!
-        # del self.engine
-        return untracked_asns
-
     def _get_randomized_non_default_asn_cls_dict(
         self,
         engine: BaseSimulationEngine,
