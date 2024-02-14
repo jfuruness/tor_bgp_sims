@@ -1,36 +1,224 @@
-from frozendict import frozendict
+from collections import Counter
+from pprint import pprint
+
+from roa_checker import ROAValidity
 
 from .tor_relay import TORRelay
-from .tor_relay_collector import TORRelayCollector
 
 
-def get_tor_relay_ipv4_origin_guard_dict() -> frozendict[int, tuple[TORRelay, ...]]:
-    """Gets IPv4 TOR Relay information"""
+def print_relay_stats(relays: tuple[TORRelay, ...]):
+    versions = [x.version for x in relays]
+    version_freq_dict = dict(Counter(versions))
 
-    relays = TORRelayCollector().run()
-    data: dict[int, list[TORRelay]] = dict()
-    for relay in relays:
-        if not relay.guard:
-            continue
-        ipv4_origin = relay.ipv4_origin
-        if ipv4_origin not in data:
-            data[ipv4_origin] = list()
-        data[ipv4_origin].append(relay)
+    pprint(version_freq_dict)  # NOTE: not in order, in alphabetical order
+    # All TOR versions in a bar graph
 
-    return frozendict({k: tuple(v) for k, v in data.items()})
+    guards = [x for x in relays if x.guard]
+    # how many are guard
+    print(f"Guard relays: {len(guards)}")
+    # How many unique gaurd ASNs
+    unique_asn_ipv4_gaurds = set([x.ipv4_origin for x in relays if x.guard])
+    print(f"Guard relays with unique ipv4 ASNs: {len(unique_asn_ipv4_gaurds)}")
+    # for ipv4:
+    #   How many guard covered by ROA
+    guard_ipv4_roa_covered = [
+        x for x in relays if x.guard and not ROAValidity.is_unknown(x.ipv4_roa_validity)
+    ]
+    print(f"ipv4 Guard covered by roa {len(guard_ipv4_roa_covered)}")
+    #   How many guard covered by ROA and valid
+    guard_ipv4_roa_valid = [
+        x for x in relays if x.guard and ROAValidity.is_valid(x.ipv4_roa_validity)
+    ]
+    print(f"ipv4 Guard valid by roa {len(guard_ipv4_roa_valid)}")
+    #   How many guard covered by ROA and invalid
+    guard_ipv4_roa_invalid = [
+        x for x in relays if x.guard and ROAValidity.is_invalid(x.ipv4_roa_validity)
+    ]
+    print(f"ipv4 Guard invalid by roa {len(guard_ipv4_roa_invalid)}")
+    #   How many guard not covered by ROA
+    guard_ipv4_roa_not_covered = [
+        x for x in relays if x.guard and ROAValidity.is_unknown(x.ipv4_roa_validity)
+    ]
+    print(f"ipv4 Guard not covered by roa {len(guard_ipv4_roa_not_covered)}")
+    #   How many guard not covered by ROA and /24
+    guard_ipv4_not_covered_and_shortest = list()
+    for x in relays:
+        if (
+            x.guard
+            and ROAValidity.is_unknown(x.ipv4_roa_validity)
+            and x.ipv4_prefix.prefixlen == 24
+        ):
+            guard_ipv4_not_covered_and_shortest.append(x)
+    print(
+        "ipv4 Guard not covered by roa and /24 "
+        f"{len(guard_ipv4_not_covered_and_shortest)}"
+    )
+    #   How many guard not covered by ROA and shorter than /24
+    guard_ipv4_not_covered_and_not_shortest = list()
+    for x in relays:
+        if (
+            x.guard
+            and ROAValidity.is_unknown(x.ipv4_roa_validity)
+            and x.ipv4_prefix.prefixlen != 24
+        ):
+            guard_ipv4_not_covered_and_not_shortest.append(x)
+    print(
+        "ipv4 Guard not covered by roa and not /24 "
+        f"{len(guard_ipv4_not_covered_and_not_shortest)}"
+    )
+    # for ipv6:
+    #   How many guard covered by ROA
+    guard_ipv6_roa_covered = [
+        x for x in relays if x.guard and not ROAValidity.is_unknown(x.ipv6_roa_validity)
+    ]
+    print(f"ipv6 Guard covered by roa {len(guard_ipv6_roa_covered)}")
+    #   How many guard covered by ROA and valid
+    guard_ipv6_roa_valid = [
+        x for x in relays if x.guard and ROAValidity.is_valid(x.ipv6_roa_validity)
+    ]
+    print(f"ipv6 Guard valid by roa {len(guard_ipv6_roa_valid)}")
+    #   How many guard covered by ROA and invalid
+    guard_ipv6_roa_invalid = [
+        x for x in relays if x.guard and ROAValidity.is_invalid(x.ipv6_roa_validity)
+    ]
+    print(f"ipv6 Guard invalid by roa {len(guard_ipv6_roa_invalid)}")
+    #   How many guard not covered by ROA
+    guard_ipv6_roa_not_covered = [
+        x
+        for x in relays
+        if x.guard and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix
+    ]
+    print(f"ipv6 Guard not covered by roa {len(guard_ipv6_roa_not_covered)}")
+    #   How many guard not covered by ROA and /48
+    guard_ipv6_not_covered_and_shortest = list()
+    for x in relays:
+        if (
+            x.guard
+            and ROAValidity.is_unknown(x.ipv6_roa_validity)
+            and x.ipv6_prefix
+            and x.ipv6_prefix.prefixlen == 48
+        ):
+            guard_ipv6_not_covered_and_shortest.append(x)
+    print(
+        "ipv6 Guard not covered by roa and /48 "
+        f"{len(guard_ipv6_not_covered_and_shortest)}"
+    )
+    #   How many guard not covered by ROA and shorter than /48
+    guard_ipv6_not_covered_and_not_shortest = list()
+    for x in relays:
+        if (
+            x.guard
+            and ROAValidity.is_unknown(x.ipv6_roa_validity)
+            and x.ipv6_prefix
+            and x.ipv6_prefix.prefixlen != 48
+        ):
+            guard_ipv6_not_covered_and_not_shortest.append(x)
+    print(
+        "ipv6 Guard not covered by roa and not /48 "
+        f"{len(guard_ipv6_not_covered_and_not_shortest)}"
+    )
 
-
-def get_tor_relay_ipv4_origin_exit_dict() -> frozendict[int, tuple[TORRelay, ...]]:
-    """Gets IPv4 TOR Relay information"""
-
-    relays = TORRelayCollector().run()
-    data: dict[int, list[TORRelay]] = dict()
-    for relay in relays:
-        if not relay.exit:
-            continue
-        ipv4_origin = relay.ipv4_origin
-        if ipv4_origin not in data:
-            data[ipv4_origin] = list()
-        data[ipv4_origin].append(relay)
-
-    return frozendict({k: tuple(v) for k, v in data.items()})
+    exits = [x for x in relays if x.exit]
+    # how many are exit
+    print(f"Exit relays: {len(exits)}")
+    # How many unique exit ASNs
+    unique_asn_ipv4_exits = set([x.ipv4_origin for x in relays if x.exit])
+    print(f"Exit relays with unique ipv4 ASNs: {len(unique_asn_ipv4_exits)}")
+    # for ipv4:
+    #   How many exit covered by ROA
+    exit_ipv4_roa_covered = [
+        x for x in relays if x.exit and not ROAValidity.is_unknown(x.ipv4_roa_validity)
+    ]
+    print(f"ipv4 Exit covered by roa {len(exit_ipv4_roa_covered)}")
+    #   How many exit covered by ROA and valid
+    exit_ipv4_roa_valid = [
+        x for x in relays if x.exit and ROAValidity.is_valid(x.ipv4_roa_validity)
+    ]
+    print(f"ipv4 Exit valid by roa {len(exit_ipv4_roa_valid)}")
+    #   How many exit covered by ROA and invalid
+    exit_ipv4_roa_invalid = [
+        x for x in relays if x.exit and ROAValidity.is_invalid(x.ipv4_roa_validity)
+    ]
+    print(f"ipv4 Exit invalid by roa {len(exit_ipv4_roa_invalid)}")
+    #   How many exit not covered by ROA
+    exit_ipv4_roa_not_covered = [
+        x for x in relays if x.exit and ROAValidity.is_unknown(x.ipv4_roa_validity)
+    ]
+    print(f"ipv4 Exit not covered by roa {len(exit_ipv4_roa_not_covered)}")
+    #   How many exit not covered by ROA and /24
+    exit_ipv4_not_covered_and_shortest = list()
+    for x in relays:
+        if (
+            x.exit
+            and ROAValidity.is_unknown(x.ipv4_roa_validity)
+            and x.ipv4_prefix.prefixlen == 24
+        ):
+            exit_ipv4_not_covered_and_shortest.append(x)
+    print(
+        "ipv4 Exit not covered by roa and /24 "
+        f"{len(exit_ipv4_not_covered_and_shortest)}"
+    )
+    #   How many exit not covered by ROA and shorter than /24
+    exit_ipv4_not_covered_and_not_shortest = list()
+    for x in relays:
+        if (
+            x.exit
+            and ROAValidity.is_unknown(x.ipv4_roa_validity)
+            and x.ipv4_prefix.prefixlen != 24
+        ):
+            exit_ipv4_not_covered_and_not_shortest.append(x)
+    print(
+        "ipv4 Exit not covered by roa and not /24 "
+        f"{len(exit_ipv4_not_covered_and_not_shortest)}"
+    )
+    # for ipv6:
+    #   How many exit covered by ROA
+    exit_ipv6_roa_covered = [
+        x for x in relays if x.exit and not ROAValidity.is_unknown(x.ipv6_roa_validity)
+    ]
+    print(f"ipv6 Exit covered by roa {len(exit_ipv6_roa_covered)}")
+    #   How many exit covered by ROA and valid
+    exit_ipv6_roa_valid = [
+        x for x in relays if x.exit and ROAValidity.is_valid(x.ipv6_roa_validity)
+    ]
+    print(f"ipv6 Exit valid by roa {len(exit_ipv6_roa_valid)}")
+    #   How many exit covered by ROA and invalid
+    exit_ipv6_roa_invalid = [
+        x for x in relays if x.exit and ROAValidity.is_invalid(x.ipv6_roa_validity)
+    ]
+    print(f"ipv6 Exit invalid by roa {len(exit_ipv6_roa_invalid)}")
+    #   How many exit not covered by ROA
+    exit_ipv6_roa_not_covered = [
+        x
+        for x in relays
+        if x.exit and ROAValidity.is_unknown(x.ipv6_roa_validity) and x.ipv6_prefix
+    ]
+    print(f"ipv6 Exit not covered by roa {len(exit_ipv6_roa_not_covered)}")
+    #   How many exit not covered by ROA and /48
+    exit_ipv6_not_covered_and_shortest = list()
+    for x in relays:
+        if (
+            x.exit
+            and ROAValidity.is_unknown(x.ipv6_roa_validity)
+            and x.ipv6_prefix
+            and x.ipv6_prefix.prefixlen == 48
+        ):
+            exit_ipv6_not_covered_and_shortest.append(x)
+    print(
+        "ipv6 Exit not covered by roa and /48 "
+        f"{len(exit_ipv6_not_covered_and_shortest)}"
+    )
+    #   How many exit not covered by ROA and shorter than /48
+    exit_ipv6_not_covered_and_not_shortest = list()
+    for x in relays:
+        if (
+            x.exit
+            and ROAValidity.is_unknown(x.ipv6_roa_validity)
+            and x.ipv6_prefix
+            and x.ipv6_prefix.prefixlen != 48
+        ):
+            exit_ipv6_not_covered_and_not_shortest.append(x)
+    print(
+        "ipv6 Exit not covered by roa and not /48 "
+        f"{len(exit_ipv6_not_covered_and_not_shortest)}"
+    )

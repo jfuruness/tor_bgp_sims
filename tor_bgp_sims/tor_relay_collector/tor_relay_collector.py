@@ -17,7 +17,7 @@ class TORRelayCollector:
     def __init__(
         self,
         requests_cache_db_path: Optional[Path] = None,
-        dl_date: date = date(2024, 2, 9),
+        dl_date: date = date.today(),
     ):
         # By default keep requests cached for a single day
         if requests_cache_db_path is None:
