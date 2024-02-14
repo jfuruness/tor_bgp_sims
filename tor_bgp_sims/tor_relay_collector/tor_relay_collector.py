@@ -18,13 +18,14 @@ class TORRelayCollector:
         self,
         requests_cache_db_path: Optional[Path] = None,
         dl_date: date | None = None,
-    ):
+    ) -> None:
+
+        self.dl_date: date = dl_date if dl_date else date.today()
         # By default keep requests cached for a single day
         if requests_cache_db_path is None:
-            requests_cache_db_path = Path.home() / f"tor_bgp_sims_{dl_date}.db"
+            requests_cache_db_path = Path.home() / f"tor_bgp_sims_{self.dl_date}.db"
         self.requests_cache_db_path: Path = requests_cache_db_path
         self.session = requests_cache.CachedSession(str(self.requests_cache_db_path))
-        self.dl_date: date = dl_date if dl_date else date.today()
 
     def __del__(self):
         self.session.close()
@@ -34,8 +35,9 @@ class TORRelayCollector:
 
         pickle_path = Path(str(self.requests_cache_db_path).replace(".db", ".pickle"))
         if not pickle_path.exists():
+            data = self._parse_tor_relays()
             with pickle_path.open("wb") as f:
-                pickle.dump(self._parse_tor_relays(), f)
+                pickle.dump(data, f)
 
         with pickle_path.open("rb") as f:
             return pickle.load(f)  # type: ignore
