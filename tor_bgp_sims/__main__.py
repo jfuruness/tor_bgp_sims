@@ -37,7 +37,12 @@ def main():
         "python_hash_seed": 0,
         "percent_adoptions": (
             SpecialPercentAdoptions.ONLY_ONE,
-        ),  # 0.1, 0.3, 0.5, 0.8, 0.99),
+            0.1,
+            0.3,
+            0.5,
+            0.8,
+            0.99
+        ),
         "num_trials": 1 if "quick" in str(sys.argv) else 500,
         "parse_cpus": cpu_count(),
     }
