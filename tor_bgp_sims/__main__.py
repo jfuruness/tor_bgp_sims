@@ -12,8 +12,10 @@ from .policies import (
     GuardValidNot24,
     GuardNotValid24,
     GuardNotValidNot24,
-    DestValid,
-    DestNotCovered,
+    Dest24,
+    DestValidNot24,
+    DestNotValidNot24,
+
 )
 from .tor_relay_collector import TORRelayCollector, print_relay_stats
 from .scenarios import (
@@ -47,7 +49,9 @@ def main():
         "parse_cpus": cpu_count(),
     }
     guard_classes = (GuardValid24, GuardValidNot24, GuardNotValid24, GuardNotValidNot24)
+    dest_classes = (Dest24, DestValidNot24, DestNotValidNot24)
 
+    """
     sim = Simulation(
         scenario_configs=tuple(
             [
@@ -82,6 +86,47 @@ def main():
         **default_kwargs,
     )
     sim.run()
+    """
+
+    sim = Simulation(
+        scenario_configs=tuple(
+            [
+                ScenarioConfig(
+                    ScenarioCls=ExitToDestScenario,
+                    AdoptPolicyCls=AdoptPolicyCls,
+                    hardcoded_asn_cls_dict=rov_dict,
+                    attacker_subcategory_attr=ASGroups.MULTIHOMED.value,
+                    propagation_rounds=2,
+                )
+                for AdoptPolicyCls in dest_classes
+            ]
+        ),
+        output_dir=BASE_PATH / "exit_to_dest_mh",
+        **default_kwargs,
+    )
+    sim.run()
+
+    sim = Simulation(
+        scenario_configs=tuple(
+            [
+                ScenarioConfig(
+                    ScenarioCls=ExitToDestScenario,
+                    AdoptPolicyCls=AdoptPolicyCls,
+                    hardcoded_asn_cls_dict=rov_dict,
+                    attacker_subcategory_attr=ASGroups.MULTIHOMED.value,
+                    override_attacker_asns=us_asns,
+                    num_attackers=len(us_asns),
+                    propagation_rounds=2,
+                )
+                for AdoptPolicyCls in dest_classes
+            ]
+        ),
+
+        output_dir=BASE_PATH / "exit_to_dest_us",
+        **default_kwargs,
+    )
+    sim.run()
+
 
     shutil.make_archive(str(BASE_PATH.parent / "tor.zip"), "zip", str(BASE_PATH))
 

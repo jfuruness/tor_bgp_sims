@@ -17,9 +17,13 @@ class GuardNotValidNot24(ROVSimplePolicy):
     name = "Not valid by ROA, shorter than /24"
 
 
-class DestValid(ROVSimplePolicy):
-    name = "Valid by ROA"
+class Dest24(ROVSimplePolicy):
+    name = "/24"
 
 
-class DestNotCovered(ROVSimplePolicy):
-    name = "Not covered by ROA"
+class DestValidNot24(ROVSimplePolicy):
+    name = "Valid by ROA, shorter than /24"
+
+
+class DestNotValidNot24(ROVSimplePolicy):
+    name = "Not valid by ROA, shorter than /24"

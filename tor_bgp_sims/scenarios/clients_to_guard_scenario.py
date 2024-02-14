@@ -1,74 +1,20 @@
-import random
-from typing import Optional, Union
+from typing import Optional
 
-from frozendict import frozendict
-
-from bgpy.enums import SpecialPercentAdoptions, Timestamps, Relationships
+from bgpy.enums import Timestamps, Relationships
 from bgpy.simulation_engine import BaseSimulationEngine, Announcement as Ann
-from bgpy.simulation_engine import Policy
-from bgpy.simulation_framework import Scenario, ScenarioConfig
-from bgpy.simulation_framework.scenarios.preprocess_anns_funcs import (
-    noop,
-    PREPROCESS_ANNS_FUNC_TYPE,
-)
+from bgpy.simulation_framework import Scenario
 
 from roa_checker import ROAValidity
 
-from ..tor_relay_collector import get_tor_relay_groups, TORRelay
+from .tor_scenario import TORScenario
 
 
-class ClientsToGuardScenario(Scenario):
+class ClientsToGuardScenario(TORScenario):
     """Attacker attempts to intercept traffic from client to gaurd by mitm gaurd
 
     Here, the attacker can simply NAT the traffic to the guard through a cloud provider,
     so we don't need to worry about keeping a route alive
     """
-
-    tor_relay_groups_dict: frozendict[Policy, tuple[TORRelay, ...]] = (
-        get_tor_relay_groups()
-    )
-
-    def __init__(
-        self,
-        *,
-        scenario_config: ScenarioConfig,
-        percent_adoption: Union[float, SpecialPercentAdoptions] = 0,
-        engine: Optional[BaseSimulationEngine] = None,
-        prev_scenario: Optional["Scenario"] = None,
-        preprocess_anns_func: PREPROCESS_ANNS_FUNC_TYPE = noop,
-    ):
-        """Adds TOR relay to the scenario
-
-        This also checks that the AdoptPolicyCls is a supported one
-
-        The way this works is that the adopt policy class is used to determine
-        the type of tor relay, and then a tor relay of that type is randomly
-        selected. This allows us to compare attacks against multiple types
-        of tor relays
-
-        The reason that this is set to the AdoptPolicyCls is merely because the
-        GraphFactoryCls uses that when creating the graph lines, so by doing
-        it this way we won't need to modify the GraphFactory class
-        """
-
-        try:
-            self.tor_relay = random.choice(
-                self.tor_relay_groups_dict[scenario_config.AdoptPolicyCls]
-            )
-        except KeyError:
-            raise KeyError(
-                f"This Scenario only supports {list(self.tor_relay_groups_dict)} for "
-                f"AdoptPolicyCls, but you used {self.scenario_config.AdoptPolicyCls}"
-            )
-
-
-        super().__init__(
-            scenario_config=scenario_config,
-            percent_adoption=percent_adoption,
-            engine=engine,
-            prev_scenario=prev_scenario,
-            preprocess_anns_func=preprocess_anns_func,
-        )
 
     def _get_victim_asns(
         self,
@@ -93,7 +39,7 @@ class ClientsToGuardScenario(Scenario):
     def _get_possible_victim_asns(self, *args, **kwargs) -> frozenset[int]:
         """Returns possible victim ASNs, defaulted from config"""
 
-        assert self.scenario_config.num_victims == 1, "Only 1 victim allowed for this class"
+        assert self.scenario_config.num_victims == 1, "Only 1 victim allowed"
         return frozenset([self.tor_relay.ipv4_origin])
 
     def _get_announcements(self, *args, **kwargs) -> tuple["Ann", ...]:

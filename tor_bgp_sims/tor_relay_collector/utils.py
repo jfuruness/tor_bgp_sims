@@ -13,8 +13,9 @@ from ..policies import (
     GuardValidNot24,
     GuardNotValid24,
     GuardNotValidNot24,
-    DestValid,
-    DestNotCovered,
+    Dest24,
+    DestValidNot24,
+    DestNotValidNot24,
 )
 
 def get_tor_relay_groups(
@@ -27,6 +28,10 @@ def get_tor_relay_groups(
         GuardValidNot24: get_guard_valid_ipv4_len_lt_24(relays),
         GuardNotValid24: get_guard_not_valid_ipv4_len_24(relays),
         GuardNotValidNot24: get_guard_not_valid_ipv4_len_lt_24(relays),
+        # NOTE: These are for the destinations, they don't affect the exit!
+        Dest24: [x for x in relays if x.exit],
+        DestValidNot24: [x for x in relays if x.exit],
+        DestNotValidNot24: [x for x in relays if x.exit],
     })
 
 
