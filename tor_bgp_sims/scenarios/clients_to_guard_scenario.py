@@ -69,13 +69,31 @@ class ClientsToGuardScenario(Scenario):
             prev_scenario=prev_scenario,
             preprocess_anns_func=preprocess_anns_func,
         )
-        assert self.scenario_config.AdoptPolicyCls == self.tor_relay_policy
 
+    def _get_victim_asns(
+        self,
+        override_victim_asns: Optional[frozenset[int]],
+        engine: Optional[BaseSimulationEngine],
+        prev_scenario: Optional["Scenario"],
+    ) -> frozenset[int]:
+        """Unlike the parent class, we always want a new victim for same trial
+
+        this is because we are choosing different relays every time
+        """
+
+        # This will force the call of _get_possible_victim_asns since we are
+        # forcing this to not reuse victims from last scenario
+        # we leave override victim asns since this is only true for tests
+        return super()._get_victim_asns(
+            override_victim_asns=override_victim_asns,
+            engine=engine,
+            prev_scenario=None
+        )
 
     def _get_possible_victim_asns(self, *args, **kwargs) -> frozenset[int]:
         """Returns possible victim ASNs, defaulted from config"""
 
-        assert self.num_victims == 1, "Only 1 victim allowed for this class"
+        assert self.scenario_config.num_victims == 1, "Only 1 victim allowed for this class"
         return frozenset([self.tor_relay.ipv4_origin])
 
     def _get_announcements(self, *args, **kwargs) -> tuple["Ann", ...]:
