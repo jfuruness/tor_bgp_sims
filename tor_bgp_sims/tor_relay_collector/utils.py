@@ -3,12 +3,14 @@ from pprint import pprint
 
 from frozendict import frozendict
 
+from bgpy.simulation_engine import Policy
 from roa_checker import ROAValidity
 
 from .tor_relay import TORRelay
+from .tor_relay_collector import TORRelayCollector
 
 def get_tor_relay_groups(
-    relays: tuple[TORRelay, ...]
+    relays: tuple[TORRelay, ...] = TORRelayCollector().run()
 ) -> frozendict[Policy, tuple[TORRelay, ...]]:
     """Returns TOR relay groups"""
 

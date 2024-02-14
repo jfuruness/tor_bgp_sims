@@ -43,7 +43,7 @@ def main():
                     ScenarioCls=ClientToGuardScenario,
                     AdoptPolicyCls=AdoptPolicyCls,
                     hardcoded_asn_cls_dict=rov_dict,
-                ),
+                )
                 for AdoptPolicyCls in guard_classes
             ]
         ),
@@ -60,7 +60,7 @@ def main():
                     AdoptPolicyCls=AdoptPolicyCls,
                     hardcoded_asn_cls_dict=rov_dict,
                     override_attacker_asns=us_asns,
-                ),
+                )
                 for AdoptPolicyCls in guard_classes
             ]
         ),
