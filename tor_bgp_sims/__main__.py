@@ -3,7 +3,7 @@ from pathlib import Path
 import shutil
 import sys
 
-from bgpy.enums import SpecialPercentAdoptions
+from bgpy.enums import ASGroups, SpecialPercentAdoptions
 from bgpy.simulation_engine import ROVSimplePolicy
 from bgpy.simulation_framework import ScenarioConfig, Simulation
 
@@ -20,6 +20,7 @@ from .policies import (
 from .tor_relay_collector import TORRelayCollector, print_relay_stats
 from .scenarios import (
     ClientsToGuardScenario,
+    ExitToDestScenario,
 )
 from .utils import get_us_country_asns, get_real_world_rov_asn_cls_dict
 

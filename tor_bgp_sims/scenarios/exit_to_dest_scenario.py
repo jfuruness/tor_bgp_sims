@@ -1,12 +1,9 @@
-from typing import Optional
-
-from bgpy.enums import Timestamps, Relationships
+from bgpy.enums import Timestamps, Relationships, SpecialPercentAdoptions
 from bgpy.simulation_engine import BaseSimulationEngine, Announcement as Ann
-from bgpy.simulation_framework import Scenario
-
-from roa_checker import ROAValidity
+from bgpy.simulation_framework import AccidentalRouteLeak
 
 from .tor_scenario import TORScenario
+from ..policies import Dest24, DestValidNot24, DestNotValidNot24
 
 
 class ExitToDestScenario(TORScenario):
@@ -21,7 +18,21 @@ class ExitToDestScenario(TORScenario):
 
     min_propagation_rounds: int = 2
 
-    __init__ = AccidentalRouteLeak.__init__
+    def __init__(self, *args, **kwargs) -> None:  # type: ignore
+        super().__init__(*args, **kwargs)
+        if (
+            self.scenario_config.attacker_subcategory_attr in self.warning_as_groups
+            and not self.scenario_config.override_attacker_asns
+        ):
+            msg = (
+                "You used the ASGroup of "
+                f"{self.scenario_config.attacker_subcategory_attr} "
+                f"for your scenario {self.__class__.__name__}, "
+                f"but {self.__class__.__name__} can't leak from stubs. "
+                "To suppress this warning, override warning_as_groups"
+            )
+            warnings.warn(msg, RuntimeWarning)
+
     warning_as_groups = AccidentalRouteLeak.warning_as_groups
 
     @property
@@ -47,20 +58,20 @@ class ExitToDestScenario(TORScenario):
 
         anns = list()
         for victim_asn in self.victim_asns:
-            if self.scenario.AdoptPolicyCls == Dest24:
+            if self.scenario_config.AdoptPolicyCls == Dest24:
                 roa_valid_length = True
                 roa_origin = victim_asn
                 prefix = "1.2.3.0/24"
-            elif self.scenario.AdoptPolicyCls == DestValidNot24:
+            elif self.scenario_config.AdoptPolicyCls == DestValidNot24:
                 roa_valid_length = True
                 roa_origin = victim_asn
                 prefix = "1.2.0.0/16"
-            elif self.scenario.AdoptPolicyCls == DestNotValidNot24:
+            elif self.scenario_config.AdoptPolicyCls == DestNotValidNot24:
                 roa_valid_length = None
                 roa_origin = None
                 prefix = "1.2.0.0/16"
             else:
-                raise NotImplementedError
+                raise NotImplementedError("Not supported")
 
             anns.append(
                 self.scenario_config.AnnCls(
@@ -75,7 +86,6 @@ class ExitToDestScenario(TORScenario):
                 )
             )
         return tuple(anns)
-
 
     def post_propagation_hook(
         self,
@@ -159,8 +169,6 @@ class ExitToDestScenario(TORScenario):
                             )
                         )
 
-
-
             self.announcements = tuple(announcements)
             self.ordered_prefix_subprefix_dict: dict[
                 str, list[str]
@@ -170,4 +178,3 @@ class ExitToDestScenario(TORScenario):
             engine.ready_to_run_round = 1
         elif propagation_round > 1:
             raise NotImplementedError
-
