@@ -7,10 +7,17 @@ from bgpy.enums import SpecialPercentAdoptions
 from bgpy.simulation_engine import ROVSimplePolicy
 from bgpy.simulation_framework import ScenarioConfig, Simulation
 
-
+from .policies import (
+    GuardValid24,
+    GuardValidNot24,
+    GuardNotValid24,
+    GuardNotValidNot24,
+    DestValid,
+    DestNotCovered,
+)
 from .tor_relay_collector import TORRelayCollector, print_relay_stats
 from .scenarios import (
-    ClientToGuardScenario,
+    ClientsToGuardScenario,
 )
 from .utils import get_us_country_asns, get_real_world_rov_asn_cls_dict
 
@@ -40,7 +47,7 @@ def main():
         scenario_configs=tuple(
             [
                 ScenarioConfig(
-                    ScenarioCls=ClientToGuardScenario,
+                    ScenarioCls=ClientsToGuardScenario,
                     AdoptPolicyCls=AdoptPolicyCls,
                     hardcoded_asn_cls_dict=rov_dict,
                 )
@@ -56,7 +63,7 @@ def main():
         scenario_configs=tuple(
             [
                 ScenarioConfig(
-                    ScenarioCls=ClientToGuardScenario,
+                    ScenarioCls=ClientsToGuardScenario,
                     AdoptPolicyCls=AdoptPolicyCls,
                     hardcoded_asn_cls_dict=rov_dict,
                     override_attacker_asns=us_asns,

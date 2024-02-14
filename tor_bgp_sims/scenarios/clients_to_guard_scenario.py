@@ -53,13 +53,14 @@ class ClientsToGuardScenario(Scenario):
 
         try:
             self.tor_relay = random.choice(
-                self.tor_relay_groups[self.scenario_config.AdoptPolicyCls]
+                self.tor_relay_groups_dict[scenario_config.AdoptPolicyCls]
             )
         except KeyError:
             raise KeyError(
-                "This Scenario only supports {list(self.tor_relay_groups)} for "
+                f"This Scenario only supports {list(self.tor_relay_groups_dict)} for "
                 f"AdoptPolicyCls, but you used {self.scenario_config.AdoptPolicyCls}"
             )
+
 
         super().__init__(
             scenario_config=scenario_config,
@@ -69,6 +70,7 @@ class ClientsToGuardScenario(Scenario):
             preprocess_anns_func=preprocess_anns_func,
         )
         assert self.scenario_config.AdoptPolicyCls == self.tor_relay_policy
+
 
     def _get_possible_victim_asns(self, *args, **kwargs) -> frozenset[int]:
         """Returns possible victim ASNs, defaulted from config"""
@@ -162,9 +164,6 @@ class ClientsToGuardScenario(Scenario):
                         prefix = str(self.tor_relay.ipv4_prefix)
                         plen = self.tor_relay.ipv4_prefix.prefixlen
                         prefix = prefix.replace(f"/{plen}", f"/{plen + 1}")
-                        print("CHECK THIS!!!!!")
-                        print(str(self.tor_relay.ipv4_prefix))
-                        input(prefix)
                         anns.append(
                             self.scenario_config.AnnCls(
                                 prefix=prefix,

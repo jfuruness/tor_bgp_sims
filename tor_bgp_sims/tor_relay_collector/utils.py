@@ -8,6 +8,14 @@ from roa_checker import ROAValidity
 
 from .tor_relay import TORRelay
 from .tor_relay_collector import TORRelayCollector
+from ..policies import (
+    GuardValid24,
+    GuardValidNot24,
+    GuardNotValid24,
+    GuardNotValidNot24,
+    DestValid,
+    DestNotCovered,
+)
 
 def get_tor_relay_groups(
     relays: tuple[TORRelay, ...] = TORRelayCollector().run()
