@@ -1,9 +1,23 @@
 from collections import Counter
 from pprint import pprint
 
+from frozendict import frozendict
+
 from roa_checker import ROAValidity
 
 from .tor_relay import TORRelay
+
+def get_tor_relay_groups(
+    relays: tuple[TORRelay, ...]
+) -> frozendict[Policy, tuple[TORRelay, ...]]:
+    """Returns TOR relay groups"""
+
+    return frozendict({
+        GuardValid24: get_guard_valid_ipv4_len_24(relays),
+        GuardValidNot24: get_guard_valid_ipv4_len_lt_24(relays),
+        GuardNotValid24: get_guard_not_valid_ipv4_len_24(relays),
+        GuardNotValidNot24: get_guard_not_valid_ipv4_len_lt_24(relays),
+    })
 
 
 def print_relay_stats(relays: tuple[TORRelay, ...]):
@@ -222,3 +236,59 @@ def print_relay_stats(relays: tuple[TORRelay, ...]):
         "ipv6 Exit not covered by roa and not /48 "
         f"{len(exit_ipv6_not_covered_and_not_shortest)}"
     )
+
+
+def get_guard_valid_ipv4_len_24(relays: tuple[TORRelay, ...]) -> tuple[TORRelay, ...]:
+    """Returns guard relays valid by ROA with a /24 IPV4 prefix"""
+
+    rv = list()
+    for x in relays:
+        if (
+            x.guard
+            and ROAValidity.is_valid(x.ipv4_roa_validity)
+            and x.ipv4_prefix.prefixlen == 24
+        ):
+            rv.append(x)
+    return tuple(rv)
+
+
+def get_guard_valid_ipv4_len_lt_24(relays: tuple[TORRelay, ...]) -> tuple[TORRelay, ...]:
+    """Returns guard relays valid by ROA with a < /24 IPV4 prefix"""
+
+    rv = list()
+    for x in relays:
+        if (
+            x.guard
+            and ROAValidity.is_valid(x.ipv4_roa_validity)
+            and x.ipv4_prefix.prefixlen < 24
+        ):
+            rv.append(x)
+    return tuple(rv)
+
+
+def get_guard_not_valid_ipv4_len_24(relays: tuple[TORRelay, ...]) -> tuple[TORRelay, ...]:
+    """Returns guard relays not valid by ROA with a /24 IPV4 prefix"""
+
+    rv = list()
+    for x in relays:
+        if (
+            x.guard
+            and (not ROAValidity.is_valid(x.ipv4_roa_validity))
+            and x.ipv4_prefix.prefixlen == 24
+        ):
+            rv.append(x)
+    return tuple(rv)
+
+
+def get_guard_not_valid_ipv4_len_lt_24(relays: tuple[TORRelay, ...]) -> tuple[TORRelay, ...]:
+    """Returns guard relays not valid by ROA with a < /24 IPV4 prefix"""
+
+    rv = list()
+    for x in relays:
+        if (
+            x.guard
+            and (not ROAValidity.is_valid(x.ipv4_roa_validity))
+            and x.ipv4_prefix.prefixlen < 24
+        ):
+            rv.append(x)
+    return tuple(rv)

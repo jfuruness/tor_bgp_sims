@@ -17,14 +17,14 @@ class TORRelayCollector:
     def __init__(
         self,
         requests_cache_db_path: Optional[Path] = None,
-        dl_date: date = date.today(),
+        dl_date: date | None = None,
     ):
         # By default keep requests cached for a single day
         if requests_cache_db_path is None:
             requests_cache_db_path = Path.home() / f"tor_bgp_sims_{dl_date}.db"
         self.requests_cache_db_path: Path = requests_cache_db_path
         self.session = requests_cache.CachedSession(str(self.requests_cache_db_path))
-        self.dl_date: date = dl_date
+        self.dl_date: date = dl_date if dl_date else date.today()
 
     def __del__(self):
         self.session.close()
