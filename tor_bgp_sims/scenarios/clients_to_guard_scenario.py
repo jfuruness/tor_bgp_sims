@@ -131,35 +131,20 @@ class ClientsToGuardScenario(Scenario):
             for attacker_asn in self.attacker_asns:
                 # Covered by a ROA
                 if roa_valid_length is not None:
-                    # Can't be more specific than a /24
-                    if self.tor_relay.ipv4_prefix.prefixlen == 24:
-                        # origin prefix hijack
-                        anns.append(
-                            self.scenario_config.AnnCls(
-                                prefix=str(self.tor_relay.ipv4_prefix),
-                                next_hop_asn=attacker_asn,
-                                as_path=(attacker_asn, victim_asn),
-                                timestamp=Timestamps.ATTACKER.value,
-                                seed_asn=attacker_asn,
-                                roa_valid_length=True,
-                                roa_origin=victim_asn,
-                                recv_relationship=Relationships.ORIGIN,
-                            )
+                    # origin prefix hijack
+                    anns.append(
+                        self.scenario_config.AnnCls(
+                            prefix=str(self.tor_relay.ipv4_prefix),
+                            next_hop_asn=attacker_asn,
+                            as_path=(attacker_asn, victim_asn),
+                            timestamp=Timestamps.ATTACKER.value,
+                            seed_asn=attacker_asn,
+                            roa_valid_length=True,
+                            roa_origin=victim_asn,
+                            recv_relationship=Relationships.ORIGIN,
                         )
-                    else:
-                        # origin prefix hijack
-                        anns.append(
-                            self.scenario_config.AnnCls(
-                                prefix=str(self.tor_relay.ipv4_prefix),
-                                next_hop_asn=attacker_asn,
-                                as_path=(attacker_asn, victim_asn),
-                                timestamp=Timestamps.ATTACKER.value,
-                                seed_asn=attacker_asn,
-                                roa_valid_length=True,
-                                roa_origin=victim_asn,
-                                recv_relationship=Relationships.ORIGIN,
-                            )
-                        )
+                    )
+                    if self.tor_relay.ipv4_prefix.prefixlen < 24:
                         # Also a subprefix hijack for non-ROV nodes
                         prefix = str(self.tor_relay.ipv4_prefix)
                         plen = self.tor_relay.ipv4_prefix.prefixlen
@@ -178,35 +163,20 @@ class ClientsToGuardScenario(Scenario):
                         )
                 # Not covered by a ROA
                 else:
-                    # Can't be more specific than a /24
-                    if self.tor_relay.ipv4_prefix.prefixlen == 24:
-                        # prefix hijack, unknown by ROA
-                        anns.append(
-                            self.scenario_config.AnnCls(
-                                prefix=str(self.tor_relay.ipv4_prefix),
-                                next_hop_asn=attacker_asn,
-                                as_path=(attacker_asn,),
-                                timestamp=Timestamps.ATTACKER.value,
-                                seed_asn=attacker_asn,
-                                roa_valid_length=None,
-                                roa_origin=None,
-                                recv_relationship=Relationships.ORIGIN,
-                            )
+                    # prefix hijack, unknown by ROA
+                    anns.append(
+                        self.scenario_config.AnnCls(
+                            prefix=str(self.tor_relay.ipv4_prefix),
+                            next_hop_asn=attacker_asn,
+                            as_path=(attacker_asn,),
+                            timestamp=Timestamps.ATTACKER.value,
+                            seed_asn=attacker_asn,
+                            roa_valid_length=None,
+                            roa_origin=None,
+                            recv_relationship=Relationships.ORIGIN,
                         )
-                    else:
-                        # prefix hijack, unknown by ROA
-                        anns.append(
-                            self.scenario_config.AnnCls(
-                                prefix=str(self.tor_relay.ipv4_prefix),
-                                next_hop_asn=attacker_asn,
-                                as_path=(attacker_asn,),
-                                timestamp=Timestamps.ATTACKER.value,
-                                seed_asn=attacker_asn,
-                                roa_valid_length=None,
-                                roa_origin=None,
-                                recv_relationship=Relationships.ORIGIN,
-                            )
-                        )
+                    )
+                    if self.tor_relay.ipv4_prefix.prefixlen < 24:
                         # Also a subprefix hijack, unknown bu ROA
                         prefix = str(self.tor_relay.ipv4_prefix)
                         plen = self.tor_relay.ipv4_prefix.prefixlen
