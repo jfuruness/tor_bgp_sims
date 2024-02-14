@@ -72,6 +72,7 @@ def main():
                     AdoptPolicyCls=AdoptPolicyCls,
                     hardcoded_asn_cls_dict=rov_dict,
                     override_attacker_asns=us_asns,
+                    num_attackers=len(us_asns),
                 )
                 for AdoptPolicyCls in guard_classes
             ]
