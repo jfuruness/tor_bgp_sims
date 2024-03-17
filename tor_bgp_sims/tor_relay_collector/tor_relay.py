@@ -1,8 +1,10 @@
 from dataclasses import dataclass, InitVar
 from ipaddress import ip_network, IPv4Network, IPv6Network
 from pprint import pprint, pformat
+import time
 from typing import Optional
 
+import requests
 from requests_cache import CachedSession
 
 from roa_checker import ROAChecker, ROAValidity, ROARouted
@@ -177,10 +179,20 @@ class TORRelay:
     ) -> tuple[IPv4Network | IPv6Network, int]:
         """Returns ASNs and prefixesusing RIPE from a given IP addr"""
 
-        URL = "https://stat.ripe.net/data/related-prefixes/data.json"
-        params = {"data_overload_limit": "ignore", "resource": str(ip_addr)}
-        resp = session.get(URL, params=params)
-        resp.raise_for_status()
+        max_retries = 3
+        for i in range(1, max_retries + 1):
+            try:
+                URL = "https://stat.ripe.net/data/related-prefixes/data.json"
+                params = {"data_overload_limit": "ignore", "resource": str(ip_addr)}
+                resp = session.get(URL, params=params)
+                resp.raise_for_status()
+                break
+            except requests.exceptions.HTTPError:
+                if i == max_retries:
+                    raise
+                else:
+                    time.sleep(i * 30)
+
         data = resp.json()
         if debug:
             pprint(data)
