@@ -78,7 +78,6 @@ def main():
                 for AdoptPolicyCls in guard_classes
             ]
         ),
-
         output_dir=BASE_PATH / "client_to_guard_us",
         **default_kwargs,  # type: ignore
     )
