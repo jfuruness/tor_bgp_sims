@@ -4,7 +4,6 @@ import shutil
 import sys
 
 from bgpy.enums import ASGroups, SpecialPercentAdoptions
-from bgpy.simulation_engine import ROVSimplePolicy
 from bgpy.simulation_framework import ScenarioConfig, Simulation
 
 from .policies import (
@@ -50,7 +49,6 @@ def main():
     guard_classes = (GuardValid24, GuardValidNot24, GuardNotValid24, GuardNotValidNot24)
     dest_classes = (Dest24, DestValidNot24, DestNotValidNot24)
 
-    """
     sim = Simulation(
         scenario_configs=tuple(
             [
@@ -85,7 +83,6 @@ def main():
         **default_kwargs,  # type: ignore
     )
     sim.run()
-    """
 
     sim = Simulation(
         scenario_configs=tuple(
