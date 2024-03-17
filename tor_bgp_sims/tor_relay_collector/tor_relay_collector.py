@@ -19,7 +19,6 @@ class TORRelayCollector:
         requests_cache_db_path: Optional[Path] = None,
         dl_date: date | None = None,
     ) -> None:
-
         self.dl_date: date = dl_date if dl_date else date.today()
         # By default keep requests cached for a single day
         if requests_cache_db_path is None:

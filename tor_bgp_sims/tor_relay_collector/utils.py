@@ -18,21 +18,24 @@ from ..policies import (
     DestNotValidNot24,
 )
 
+
 def get_tor_relay_groups(
     relays: tuple[TORRelay, ...] = TORRelayCollector().run()
 ) -> frozendict[type[Policy], tuple[TORRelay, ...]]:
     """Returns TOR relay groups"""
 
-    return frozendict({
-        GuardValid24: get_guard_valid_ipv4_len_24(relays),
-        GuardValidNot24: get_guard_valid_ipv4_len_lt_24(relays),
-        GuardNotValid24: get_guard_not_valid_ipv4_len_24(relays),
-        GuardNotValidNot24: get_guard_not_valid_ipv4_len_lt_24(relays),
-        # NOTE: These are for the destinations, they don't affect the exit!
-        Dest24: tuple([x for x in relays if x.exit]),
-        DestValidNot24: tuple([x for x in relays if x.exit]),
-        DestNotValidNot24: tuple([x for x in relays if x.exit]),
-    })
+    return frozendict(
+        {
+            GuardValid24: get_guard_valid_ipv4_len_24(relays),
+            GuardValidNot24: get_guard_valid_ipv4_len_lt_24(relays),
+            GuardNotValid24: get_guard_not_valid_ipv4_len_24(relays),
+            GuardNotValidNot24: get_guard_not_valid_ipv4_len_lt_24(relays),
+            # NOTE: These are for the destinations, they don't affect the exit!
+            Dest24: tuple([x for x in relays if x.exit]),
+            DestValidNot24: tuple([x for x in relays if x.exit]),
+            DestNotValidNot24: tuple([x for x in relays if x.exit]),
+        }
+    )
 
 
 def print_relay_stats(relays: tuple[TORRelay, ...]):
@@ -267,7 +270,9 @@ def get_guard_valid_ipv4_len_24(relays: tuple[TORRelay, ...]) -> tuple[TORRelay,
     return tuple(rv)
 
 
-def get_guard_valid_ipv4_len_lt_24(relays: tuple[TORRelay, ...]) -> tuple[TORRelay, ...]:
+def get_guard_valid_ipv4_len_lt_24(
+    relays: tuple[TORRelay, ...]
+) -> tuple[TORRelay, ...]:
     """Returns guard relays valid by ROA with a < /24 IPV4 prefix"""
 
     rv = list()
@@ -281,7 +286,9 @@ def get_guard_valid_ipv4_len_lt_24(relays: tuple[TORRelay, ...]) -> tuple[TORRel
     return tuple(rv)
 
 
-def get_guard_not_valid_ipv4_len_24(relays: tuple[TORRelay, ...]) -> tuple[TORRelay, ...]:
+def get_guard_not_valid_ipv4_len_24(
+    relays: tuple[TORRelay, ...]
+) -> tuple[TORRelay, ...]:
     """Returns guard relays not valid by ROA with a /24 IPV4 prefix"""
 
     rv = list()
@@ -295,7 +302,9 @@ def get_guard_not_valid_ipv4_len_24(relays: tuple[TORRelay, ...]) -> tuple[TORRe
     return tuple(rv)
 
 
-def get_guard_not_valid_ipv4_len_lt_24(relays: tuple[TORRelay, ...]) -> tuple[TORRelay, ...]:
+def get_guard_not_valid_ipv4_len_lt_24(
+    relays: tuple[TORRelay, ...]
+) -> tuple[TORRelay, ...]:
     """Returns guard relays not valid by ROA with a < /24 IPV4 prefix"""
 
     rv = list()

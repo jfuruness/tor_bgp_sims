@@ -15,7 +15,6 @@ from .policies import (
     Dest24,
     DestValidNot24,
     DestNotValidNot24,
-
 )
 from .tor_relay_collector import TORRelayCollector, print_relay_stats
 from .scenarios import (
@@ -26,7 +25,6 @@ from .utils import get_us_country_asns, get_real_world_rov_asn_cls_dict
 
 
 def main():
-
     relays = TORRelayCollector().run()
     print_relay_stats(relays)
 
@@ -44,7 +42,7 @@ def main():
             0.3,
             0.5,
             0.8,
-            0.99
+            0.99,
         ),
         "num_trials": 1 if "quick" in str(sys.argv) else 500,
         "parse_cpus": cpu_count(),
@@ -122,12 +120,10 @@ def main():
                 for AdoptPolicyCls in dest_classes
             ]
         ),
-
         output_dir=BASE_PATH / "exit_to_dest_us",
         **default_kwargs,  # type: ignore
     )
     sim.run()
-
 
     shutil.make_archive(str(BASE_PATH.parent / "tor.zip"), "zip", str(BASE_PATH))
 

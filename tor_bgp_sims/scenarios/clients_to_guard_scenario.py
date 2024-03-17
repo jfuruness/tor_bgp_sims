@@ -31,9 +31,7 @@ class ClientsToGuardScenario(TORScenario):
         # forcing this to not reuse victims from last scenario
         # we leave override victim asns since this is only true for tests
         return super()._get_victim_asns(
-            override_victim_asns=override_victim_asns,
-            engine=engine,
-            prev_scenario=None
+            override_victim_asns=override_victim_asns, engine=engine, prev_scenario=None
         )
 
     def _get_possible_victim_asns(self, *args, **kwargs) -> frozenset[int]:
@@ -43,7 +41,6 @@ class ClientsToGuardScenario(TORScenario):
         return frozenset([self.tor_relay.ipv4_origin])
 
     def _get_announcements(self, *args, **kwargs) -> tuple["Ann", ...]:
-
         """Returns announcements
 
         Attacker strategy:

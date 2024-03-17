@@ -21,7 +21,6 @@ def get_real_world_rov_asn_cls_dict(
     json_path: Path = Path.home() / "Desktop" / "rov_info.json",
     requests_cache_db_path: Optional[Path] = None,
 ) -> frozendict[int, type[RealROVSimplePolicy]]:
-
     if not json_path.exists():
         for CollectorCls in rov_collector_classes:
             CollectorCls(
