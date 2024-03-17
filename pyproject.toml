@@ -60,7 +60,7 @@ tor = "tor_bgp_sims.__main__:main"
 
 [project.optional-dependencies]
 test = [
-    "bgpy_pkg[test]==7.0.4",
+    "bgpy_pkg[test]==7.0.5",
 ]
 
 [tool.setuptools]
