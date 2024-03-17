@@ -20,7 +20,7 @@ from ..policies import (
 
 def get_tor_relay_groups(
     relays: tuple[TORRelay, ...] = TORRelayCollector().run()
-) -> frozendict[Policy, tuple[TORRelay, ...]]:
+) -> frozendict[type[Policy], tuple[TORRelay, ...]]:
     """Returns TOR relay groups"""
 
     return frozendict({
@@ -29,9 +29,9 @@ def get_tor_relay_groups(
         GuardNotValid24: get_guard_not_valid_ipv4_len_24(relays),
         GuardNotValidNot24: get_guard_not_valid_ipv4_len_lt_24(relays),
         # NOTE: These are for the destinations, they don't affect the exit!
-        Dest24: [x for x in relays if x.exit],
-        DestValidNot24: [x for x in relays if x.exit],
-        DestNotValidNot24: [x for x in relays if x.exit],
+        Dest24: tuple([x for x in relays if x.exit]),
+        DestValidNot24: tuple([x for x in relays if x.exit]),
+        DestNotValidNot24: tuple([x for x in relays if x.exit]),
     })
 
 

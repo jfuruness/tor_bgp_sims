@@ -18,7 +18,7 @@ from ..tor_relay_collector import get_tor_relay_groups, TORRelay
 class TORScenario(Scenario):
     """TOR Scenario that selects a relay based on adopt policy"""
 
-    tor_relay_groups_dict: frozendict[Policy, tuple[TORRelay, ...]] = (
+    tor_relay_groups_dict: frozendict[type[Policy], tuple[TORRelay, ...]] = (
         get_tor_relay_groups()
     )
 

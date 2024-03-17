@@ -65,7 +65,7 @@ def main():
             ]
         ),
         output_dir=BASE_PATH / "client_to_guard_single_attacker",
-        **default_kwargs,
+        **default_kwargs,  # type: ignore
     )
     sim.run()
 
@@ -84,7 +84,7 @@ def main():
         ),
 
         output_dir=BASE_PATH / "client_to_guard_us",
-        **default_kwargs,
+        **default_kwargs,  # type: ignore
     )
     sim.run()
     """
@@ -103,7 +103,7 @@ def main():
             ]
         ),
         output_dir=BASE_PATH / "exit_to_dest_mh",
-        **default_kwargs,
+        **default_kwargs,  # type: ignore
     )
     sim.run()
 
@@ -124,7 +124,7 @@ def main():
         ),
 
         output_dir=BASE_PATH / "exit_to_dest_us",
-        **default_kwargs,
+        **default_kwargs,  # type: ignore
     )
     sim.run()
 

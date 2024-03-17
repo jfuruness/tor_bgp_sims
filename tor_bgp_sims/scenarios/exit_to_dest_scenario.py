@@ -1,3 +1,5 @@
+import warnings
+
 from bgpy.enums import Timestamps, Relationships, SpecialPercentAdoptions
 from bgpy.simulation_engine import BaseSimulationEngine, Announcement as Ann
 from bgpy.simulation_framework import AccidentalRouteLeak
@@ -33,7 +35,7 @@ class ExitToDestScenario(TORScenario):
             )
             warnings.warn(msg, RuntimeWarning)
 
-    warning_as_groups = AccidentalRouteLeak.warning_as_groups
+    warning_as_groups = property(AccidentalRouteLeak.warning_as_groups)
 
     @property
     def _untracked_asns(self) -> frozenset[int]:
