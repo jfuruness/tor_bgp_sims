@@ -205,7 +205,8 @@ class TORRelay:
                 prefix_origin_pairs.append(
                     (ip_network(inner["prefix"]), int(inner["origin_asn"]))
                 )
-        assert prefix_origin_pairs, f"No prefixes found for {ip_addr}"
+        if not prefix_origin_pairs:
+            raise Exception(f"No prefixes found for {ip_addr} {resp.url}")
 
         # Ensure that the second most isn't the same length...
         pairs = sorted(prefix_origin_pairs, key=lambda x: x[0].prefixlen)

@@ -55,7 +55,11 @@ class TORRelayCollector:
         # but not going to bother multiprocessing this
         # due to rate limits and also caching - it only needs to run once
         for x in tqdm(raw_tor_datas, total=len(raw_tor_datas), desc="Parsing TOR"):
-            tor_relays.append(TORRelay(**(x | init_vars)))
+            try:
+                tor_relays.append(TORRelay(**(x | init_vars)))
+            except Exception as e:
+                print(e)
+                print("Failed to parse relay, continuing")
         return tuple(tor_relays)
 
     def _get_relevant_tor_lines(self) -> tuple[str, ...]:
