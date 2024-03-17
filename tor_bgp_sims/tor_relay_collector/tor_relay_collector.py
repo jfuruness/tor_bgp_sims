@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from ipaddress import ip_network
 from pathlib import Path
 import pickle
@@ -62,8 +62,15 @@ class TORRelayCollector:
     def _get_relevant_tor_lines(self) -> tuple[str, ...]:
         """Returns the relevant lines from TOR consensus"""
 
-        resp = self.session.get(self._get_tor_relay_url())
-        resp.raise_for_status()
+        try:
+            resp = self.session.get(self._get_tor_relay_url())
+            resp.raise_for_status()
+        except Exception as e:
+            print(e)
+            print("Consensus not posted for current day, using previous")
+            self.dl_date = self.dl_date - timedelta(days=1)
+            resp = self.session.get(self._get_tor_relay_url())
+            resp.raise_for_status()
 
         relevant_lines: list[str] = list()
 
