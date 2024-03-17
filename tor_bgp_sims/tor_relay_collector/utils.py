@@ -171,7 +171,14 @@ def print_relay_stats(relays: tuple[TORRelay, ...]):
     exit_ipv4_roa_invalid = [
         x for x in relays if x.exit and ROAValidity.is_invalid(x.ipv4_roa_validity)
     ]
+    exit_ipv4_roa_invalid_addresses = [
+        (x.ipv4_addr, x.ipv4_origin)
+        for x in relays
+        if x.exit and ROAValidity.is_invalid(x.ipv4_roa_validity)
+    ]
+
     print(f"ipv4 Exit invalid by roa {len(exit_ipv4_roa_invalid)}")
+    print(f"ipv4 Exit invalid by roa {exit_ipv4_roa_invalid_addresses}")
     #   How many exit not covered by ROA
     exit_ipv4_roa_not_covered = [
         x for x in relays if x.exit and ROAValidity.is_unknown(x.ipv4_roa_validity)
