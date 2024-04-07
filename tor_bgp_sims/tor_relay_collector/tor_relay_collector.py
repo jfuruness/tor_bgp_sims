@@ -122,6 +122,6 @@ class TORRelayCollector:
             csv_path=None, requests_cache_db_path=self.requests_cache_db_path
         ).run():
             roa_checker.insert(ip_network(roa.prefix), roa.origin, roa.max_length)
-        input(roa_checker.get_roa(ip_network('45.130.20.250/32'), 43357).prefix)
-        raise Exception
+        # input(roa_checker.get_roa(ip_network('45.130.20.250/32'), 43357).prefix)
+        # raise Exception
         return roa_checker
