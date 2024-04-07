@@ -33,7 +33,7 @@ class TORRelayCollector:
         """Download TOR Relay data w/cached requests"""
 
         pickle_path = Path(str(self.requests_cache_db_path).replace(".db", ".pickle"))
-        if not pickle_path.exists():
+        if not pickle_path.exists() or True:
             data = self._parse_tor_relays()
             with pickle_path.open("wb") as f:
                 pickle.dump(data, f)
@@ -122,4 +122,6 @@ class TORRelayCollector:
             csv_path=None, requests_cache_db_path=self.requests_cache_db_path
         ).run():
             roa_checker.insert(ip_network(roa.prefix), roa.origin, roa.max_length)
+        input(roa_checker.get_roa(ip_network('45.130.20.250/32'), 43357).prefix)
+        raise Exception
         return roa_checker
