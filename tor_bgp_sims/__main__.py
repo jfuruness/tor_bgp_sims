@@ -43,7 +43,7 @@ def main():
             0.8,
             0.99,
         ),
-        "num_trials": 1 if "quick" in str(sys.argv) else 500,
+        "num_trials": 100 if "quick" in str(sys.argv) else 500,
         "parse_cpus": cpu_count(),
     }
     guard_classes = (GuardValid24, GuardValidNot24, GuardNotValid24, GuardNotValidNot24)
@@ -65,6 +65,7 @@ def main():
     )
     sim.run()
 
+    """
     sim = Simulation(
         scenario_configs=tuple(
             [
@@ -82,6 +83,7 @@ def main():
         **default_kwargs,  # type: ignore
     )
     sim.run()
+    """
 
     sim = Simulation(
         scenario_configs=tuple(
@@ -101,6 +103,7 @@ def main():
     )
     sim.run()
 
+    """
     sim = Simulation(
         scenario_configs=tuple(
             [
@@ -120,6 +123,7 @@ def main():
         **default_kwargs,  # type: ignore
     )
     sim.run()
+    """
 
     shutil.make_archive(str(BASE_PATH.parent / "tor.zip"), "zip", str(BASE_PATH))
 
