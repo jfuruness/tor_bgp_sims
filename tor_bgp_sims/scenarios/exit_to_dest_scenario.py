@@ -63,15 +63,15 @@ class ExitToDestScenario(TORScenario):
             if self.scenario_config.AdoptPolicyCls == Dest24:
                 roa_valid_length = True
                 roa_origin = victim_asn
-                prefix = "1.2.3.0/24"
+                prefix = "2.2.3.0/24"
             elif self.scenario_config.AdoptPolicyCls == DestValidNot24:
                 roa_valid_length = True
                 roa_origin = victim_asn
-                prefix = "1.2.0.0/16"
+                prefix = "2.2.0.0/16"
             elif self.scenario_config.AdoptPolicyCls == DestNotValidNot24:
                 roa_valid_length = None
                 roa_origin = None
-                prefix = "1.2.0.0/16"
+                prefix = "2.2.0.0/16"
             else:
                 raise NotImplementedError("Not supported")
 
