@@ -33,7 +33,7 @@ class TORRelayCollector:
         """Download TOR Relay data w/cached requests"""
 
         pickle_path = Path(str(self.requests_cache_db_path).replace(".db", ".pickle"))
-        if not pickle_path.exists() or True:
+        if not pickle_path.exists():
             data = self._parse_tor_relays()
             with pickle_path.open("wb") as f:
                 pickle.dump(data, f)
