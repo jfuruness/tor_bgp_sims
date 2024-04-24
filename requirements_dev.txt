@@ -1,4 +1,4 @@
-bgpy_pkg[test]==7.0.10
+bgpy_pkg[test]==7.0.11
 roa_collector==1.3.1
 roa_checker==1.1.4
 rov_collector==1.1.4
