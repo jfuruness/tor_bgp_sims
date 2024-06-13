@@ -20,9 +20,12 @@ from ..policies import (
 
 
 def get_tor_relay_groups(
-    relays: tuple[TORRelay, ...] = TORRelayCollector().run()
+    relays: tuple[TORRelay, ...] = ()
 ) -> frozendict[type[Policy], tuple[TORRelay, ...]]:
     """Returns TOR relay groups"""
+
+    if not relays:
+        relays = TORRelayCollector().run()
 
     return frozendict(
         {

@@ -1,6 +1,7 @@
 from dataclasses import dataclass, InitVar
 from ipaddress import ip_network, IPv4Network, IPv6Network
 from pprint import pprint, pformat
+import re
 import time
 from typing import Optional
 
@@ -172,6 +173,19 @@ class TORRelay:
         """Returns the Relay version"""
 
         return self.v[1]
+
+    @property
+    def bandwidth_weight(self) -> int:
+        """Returns the weight for the bandwidth used
+
+        Original expression is like ('Bandwidth=6000',)
+        """
+
+        assert self.w
+        assert isinstance(self.w, tuple)
+        result = re.search(r"Bandwidth=(\d+)", self.w[0])
+        assert result, str(self.w)
+        return int(result.group(1))
 
     @staticmethod
     def get_prefix_origin_pair(

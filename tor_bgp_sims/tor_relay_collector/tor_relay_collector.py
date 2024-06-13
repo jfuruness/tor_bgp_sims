@@ -19,7 +19,9 @@ class TORRelayCollector:
         requests_cache_db_path: Optional[Path] = None,
         dl_date: date | None = None,
     ) -> None:
+        print(dl_date)
         self.dl_date: date = dl_date if dl_date else date.today()
+        print(self.dl_date)
         # By default keep requests cached for a single day
         if requests_cache_db_path is None:
             requests_cache_db_path = Path.home() / f"tor_bgp_sims_{self.dl_date}.db"
